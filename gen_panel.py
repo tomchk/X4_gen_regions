@@ -66,4 +66,4 @@ class Gen_PT_Panel(bpy.types.Panel):
         layout.separator()
 
         row = layout.row()
-        row.operator("view3d.gen_regions", text="GenRegions")
+        row.operator("view3d.gen_regions", text="Generate Regions")
