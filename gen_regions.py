@@ -262,8 +262,8 @@ class Gen_Regions_Operator(bpy.types.Operator):
 
         # generated_on = str(datetime.datetime.now())
 
-        #targetPath = 'D:/X4_out/testBlend/' # TODO Testing ONLY
-        #source = r'D:/X4_out/mod/maps/universe/clusters.xml' # TODO Testing ONLY
+        # targetPath = r'D:/X4_out/testBlend/' # TODO Testing ONLY
+        # source = r'C:\Users\Base\Downloads\x4-galaxy-creator-electron-win32-x64\output\swgalaxy\maps\swgalaxy\clusters.xml' # TODO Testing ONLY
 
         targetPath = target
         sourceTree = etree.parse(source)
@@ -274,6 +274,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
 <gen_regions_input>
     <sample_cluster_macro noregion="true" randomize="false">
         <fields>
+            <volumetricfog></volumetricfog>
             <asteroid_ore_xxl></asteroid_ore_xxl>
             <asteroid_ore_xl></asteroid_ore_xl>
             <fogpattern_v2_macro></fogpattern_v2_macro>
@@ -302,11 +303,10 @@ class Gen_Regions_Operator(bpy.types.Operator):
 
         #targetRoot.append(Comment('Generated XML'))
 
-        sourceRoot = sourceTree.getroot()
-
         i = 0
-        for thisMacro in sourceRoot.findall("./macro[@class='cluster']"):
+        for thisMacro in sourceTree.findall("./macro[@class='cluster']"):
             thisMacroName = thisMacro.attrib['name']
+            randomizeThisRegion = len(genRITree.findall('.//' + thisMacroName + '[@randomize="false"]')) == 0 # Will be false only if the tag includes this attribute as false; default is to randomize
             if len(genRITree.findall('.//' + thisMacroName + '[@noregion="true"]')) == 0:
                 region = etree.SubElement(
                     targetRoot, 'region',
@@ -321,7 +321,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                     }
                 )
 
-                # Basically, every third item in the for-loop will NOT user a cylinder
+                # Basically, every third item in the for-loop will NOT use a cylinder
                 if i % 3 != 0:
                     boundary = etree.SubElement(region, 'boundary', {'class': "cylinder"})
                     boundarySize = etree.SubElement(
@@ -382,9 +382,75 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 etree.SubElement(radialFalloff, 'step', {'position': "1.0", 'value': "0.0"})
 
                 fields = etree.SubElement(region, 'fields')
-                randomizeThisRegion = len(genRITree.findall('.//' + thisMacroName + '[@randomize="false"]')) == 0
-                if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/volumetricfog')) > 0: etree.SubElement(fields, 'volumetricfog', {'multiplier': "0.05", 'medium': "fog_whiteblue_emissive", 'texture': "assets/textures/environments/fog_smoothclouds_03", 'lodrule': "nebulafar", 'size': "30000",
-                        'sizevariation': "0.4", 'densityfactor': "0.05", 'rotation': "360", 'rotationvariation': "0.0", 'noisescale': "15000", 'seed': thisSeedStr, 'minnoisevalue': "0.4", 'maxnoisevalue': "1.0"})
+                
+                fogMediumList = [
+                    'fog_asteroidbelt',
+                    'fog_asteroidbelt2',
+                    'fog_blue',
+                    'fog_blue_mist',
+                    'fog_bluepink',
+                    'fog_blueveins',
+                    'fog_brown',
+                    'fog_burgundy',
+                    'fog_cluster114a',
+                    'fog_cluster114b',
+                    'fog_cluster_14_basefill',
+                    'fog_cluster_14_sector_001',
+                    'fog_cluster_33_sector_001',
+                    'fog_darkblue',
+                    'fog_greenveins',
+                    'fog_grey',
+                    'fog_grey_emissive',
+                    'fog_grey_emissive2',
+                    'fog_greybase',
+                    'fog_greystructure',
+                    'fog_lightbrown',
+                    'fog_lightbrown_base',
+                    'fog_lightbrown_base_var1',
+                    'fog_lightgreen',
+                    'fog_orange_directional',
+                    'fog_orange_directional_var1',
+                    'fog_red',
+                    'fog_saturnbelt',
+                    'fog_saturnbelt2',
+                    'fog_structurefield',
+                    'fog_turquoise',
+                    'fog_whiteblue',
+                    'fog_whiteblue_emissive',
+                    'fog_wreckfield',
+                    'helium',
+                    'hydrogen'
+                ]
+                fogTextureList = [
+                    'assets/textures/environments/fog_maskrnd_03',
+                    'assets/textures/environments/fog_maskrnd_06_gui',
+                    'assets/textures/environments/fog_maskrnd_07',
+                    'assets/textures/environments/fog_patterncloud_01',
+                    'assets/textures/environments/fog_patterncloud_02',
+                    'assets/textures/environments/fog_patterncloud_03',
+                    'assets/textures/environments/fog_patterncloud_04',
+                    'assets/textures/environments/fog_patterncloud_06',
+                    'assets/textures/environments/fog_patterncloud_07'
+                    'assets/textures/environments/fog_patterncloud_08',
+                    'assets/textures/environments/volumefog/vf_chunky_diff',
+                    'assets/textures/environments/volumefog/vf_structured_01_diff',
+                    'assets/textures/environments/fog_smoothclouds_01',
+                    'assets/textures/environments/fog_smoothclouds_03',
+                ]
+
+                # for element in fogMediumTree.findall(".//medium"): 
+                #     fogMediumList.append(element.text)
+                # for element in fogTextureTree.findall(".//texture"): 
+                #     fogTextureList.append(element.text)
+
+                if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/volumetricfog')) > 0: etree.SubElement(fields, 'volumetricfog', {
+                    'multiplier': str(round(randnum(0.05,0.1,i),4)), 
+                    'medium': fogMediumList[int(randnum(0,len(fogMediumList),i))],
+                    'texture': fogTextureList[int(randnum(0,len(fogTextureList),i))], 
+                    'lodrule': "nebulafar", 'size': str(round(randnum(15000,45000,i),0)),
+                    'sizevariation': "0.4", 'densityfactor': str(round(randnum(0.005,0.1,i),4)), 'rotation': "360", 'rotationvariation': "0.0", 'noisescale': "15000", 
+                    'seed': thisSeedStr, 'minnoisevalue': str(round(randnum(0,0.4,i),4)), 'maxnoisevalue': "1.0"})
+                
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_xxl')) > 0: etree.SubElement(fields, 'asteroid', {'groupref': "asteroid_ore_xxl",
                         'lodrule': "asteroidxl",
                         'densityfactor': str(round(factorDensity*randnum(0.0005,0.0015,i + 1),4)),
