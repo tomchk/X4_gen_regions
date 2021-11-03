@@ -331,6 +331,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                     boundary = etree.SubElement(region, 'boundary', {'class': "splinetube"})
                     boundarySize = etree.SubElement(boundary, 'size', {'r': str(round(randnum(12000,22000,i),0))})
 
+                    # START Using Blender Addons
                     context = bpy.context
                     verts = NoiseCurve(2, randnum(2, 7, i), randnum(
                         3, 8, i), 1000000, [1, 1, 1], 1, 0, i)
@@ -341,7 +342,10 @@ class Gen_Regions_Operator(bpy.types.Operator):
 
                     # create object
                     createCurve(context, vertArray)
+                    # END Using Blender Addons
 
+
+                    # START Using Spline Exporter
                     global uscale
                     uscale = bpy.context.scene.unit_settings.scale_length
                     obj = bpy.context.active_object
@@ -363,6 +367,8 @@ class Gen_Regions_Operator(bpy.types.Operator):
 
                         finalSpline = etree.SubElement(boundary, 'splineposition', {'x': str(fieldvalues[0]), 'y': str(fieldvalues[1]), 'z': str(fieldvalues[2]), 'tx': str(
                             (normalizedTangs[0])), 'ty': str((normalizedTangs[1])), 'tz': str((normalizedTangs[2])), 'inlength': str(tangin), 'outlength': str(tangout)})
+                    # END Using Egosoft Spline Exporter
+
 
                 falloff = etree.SubElement(region, 'falloff')
                 lateralFalloff = etree.SubElement(falloff, 'lateral')
@@ -430,12 +436,12 @@ class Gen_Regions_Operator(bpy.types.Operator):
                     'assets/textures/environments/fog_patterncloud_03',
                     'assets/textures/environments/fog_patterncloud_04',
                     'assets/textures/environments/fog_patterncloud_06',
-                    'assets/textures/environments/fog_patterncloud_07'
+                    'assets/textures/environments/fog_patterncloud_07',
                     'assets/textures/environments/fog_patterncloud_08',
-                    'assets/textures/environments/volumefog/vf_chunky_diff',
-                    'assets/textures/environments/volumefog/vf_structured_01_diff',
                     'assets/textures/environments/fog_smoothclouds_01',
                     'assets/textures/environments/fog_smoothclouds_03',
+                    'assets/textures/environments/volumefog/vf_chunky_diff',
+                    'assets/textures/environments/volumefog/vf_structured_01_diff'
                 ]
 
                 # for element in fogMediumTree.findall(".//medium"): 
