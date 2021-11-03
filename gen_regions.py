@@ -304,7 +304,8 @@ class Gen_Regions_Operator(bpy.types.Operator):
         #targetRoot.append(Comment('Generated XML'))
 
         i = 0
-        for thisMacro in sourceTree.findall("./macro[@class='cluster']"):
+        #for thisMacro in sourceTree.findall("./macro[@class='cluster']"): 
+        for thisMacro in sourceTree.findall("./macro[@class='sector']"):
             thisMacroName = thisMacro.attrib['name']
             randomizeThisRegion = len(genRITree.findall('.//' + thisMacroName + '[@randomize="false"]')) == 0 # Will be false only if the tag includes this attribute as false; default is to randomize
             if len(genRITree.findall('.//' + thisMacroName + '[@noregion="true"]')) == 0:
@@ -450,11 +451,11 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 #     fogTextureList.append(element.text)
 
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/volumetricfog')) > 0: etree.SubElement(fields, 'volumetricfog', {
-                    'multiplier': str(round(randnum(0.05,0.1,i),4)), 
+                    'multiplier': str(round(randnum(0.05,0.2,i),4)), 
                     'medium': fogMediumList[int(randnum(0,len(fogMediumList),i))],
                     'texture': fogTextureList[int(randnum(0,len(fogTextureList),i))], 
                     'lodrule': "nebulafar", 'size': str(round(randnum(15000,45000,i),0)),
-                    'sizevariation': "0.4", 'densityfactor': str(round(randnum(0.005,0.1,i),4)), 'rotation': "360", 'rotationvariation': "0.0", 'noisescale': "15000", 
+                    'sizevariation': "0.4", 'densityfactor': str(round(randnum(0.005,0.2,i),4)), 'rotation': "360", 'rotationvariation': "0.0", 'noisescale': "15000", 
                     'seed': thisSeedStr, 'minnoisevalue': str(round(randnum(0,0.4,i),4)), 'maxnoisevalue': "1.0"})
                 
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_xxl')) > 0: etree.SubElement(fields, 'asteroid', {'groupref': "asteroid_ore_xxl",
@@ -529,16 +530,16 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'rotationvariation': "16",
                         'noisescale': "5000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.1,0.15,i + 5),4)),
-                        'maxnoisevalue': str(round(randnum(0.25,0.29,i + 5),4))})
+                        'minnoisevalue': str(round(randnum(0.1,0.15,i + 6),4)),
+                        'maxnoisevalue': str(round(randnum(0.25,0.29,i + 6),4))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_nividium_xs')) > 0: etree.SubElement(fields, 'asteroid', {'groupref': "asteroid_nividium_xs",
                         'densityfactor': str(round(factorDensity*randnum(1.5,2.5,i + 10),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.1,0.15,i + 5),4)),
-                        'maxnoisevalue': str(round(randnum(0.25,0.29,i + 5),4))})
+                        'minnoisevalue': str(round(randnum(0.1,0.15,i + 7),4)),
+                        'maxnoisevalue': str(round(randnum(0.25,0.29,i + 7),4))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/fogpattern_v2_macro')) > 0: etree.SubElement(fields, 'nebula', {'ref': "fogpattern_v2_macro",
                         'localred': "16",
                         'localgreen': "19",
