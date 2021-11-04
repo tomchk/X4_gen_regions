@@ -293,7 +293,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
         thisSeedStr = str(thisSeed)
         factorDensity = 1.3
 
-        targetRoot = etree.Element(
+        regionDefXML = etree.Element(
             'regions',
             {
                 'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance",
@@ -301,7 +301,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
             }
         )
 
-        #targetRoot.append(Comment('Generated XML'))
+        #regionDefXML.append(Comment('Generated XML'))
 
         i = 0
         #for thisMacro in sourceTree.findall("./macro[@class='cluster']"): 
@@ -310,7 +310,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
             randomizeThisRegion = len(genRITree.findall('.//' + thisMacroName + '[@randomize="false"]')) == 0 # Will be false only if the tag includes this attribute as false; default is to randomize
             if len(genRITree.findall('.//' + thisMacroName + '[@noregion="true"]')) == 0:
                 region = etree.SubElement(
-                    targetRoot, 'region',
+                    regionDefXML, 'region',
                     {
                         'name': "globalregion_" + thisMacroName.lower(),
                         'density': "1.0",
@@ -561,11 +561,88 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 
                 i += 1
 
-        targetFile = (targetPath + 'libraries/region_definitions.xml')
-
-        os.makedirs(os.path.dirname(targetFile), exist_ok=True)
-        with open(targetFile, "w") as f:
-            f.write(prettify(targetRoot))
+        regionDefFile = (targetPath + 'libraries/region_definitions.xml')
+        os.makedirs(os.path.dirname(regionDefFile), exist_ok=True)
+        with open(regionDefFile, "w") as f:
+            f.write(prettify(regionDefXML))
         f.close()
+
+        contentXML = etree.Element(
+            'content',
+            {
+                'id': "gen_regions_output",
+                'name': "Generated Regions",
+                'description': "",
+                'author': "metame's Python Generator",
+                'date': str(datetime.datetime.now()),
+                'version': "1",
+                'save': "0"
+            }
+        )
+        etree.SubElement(contentXML, 'dependency', {'id': "ego_dlc_terran", 'version': "100", 'optional': "false"})
+        etree.SubElement(contentXML, 'dependency', {'id': "ego_dlc_split", 'version': "100", 'optional': "false"})
+        contentFile = (targetPath + 'content.xml')
+        os.makedirs(os.path.dirname(contentFile), exist_ok=True)
+        with open(contentFile, "w") as f:
+            f.write(prettify(contentXML))
+        f.close()
+
+
+        # START ORBIT TESTING
+        vertArrayTest = [1E7,0,0,0,0,1E7,-1E7,0,0,0,0,-1E7,1E7,0,-100]
+        createCurve(context, vertArrayTest)
+        uscale = bpy.context.scene.unit_settings.scale_length
+        obj = bpy.context.active_object
+        points = obj.data.splines[0].bezier_points
+        pointcount = len(points)
+        handleRight = []
+        handleLeft = []
+        pointsOnly = []
+        for ii in range(0, pointcount):
+            handleRight.append(points[ii].handle_right)
+            handleLeft.append(points[ii].handle_left)
+            pointsOnly.append([points[ii].co.x*uscale, points[ii].co.z*uscale, points[ii].co.y*uscale])
+        print(handleRight)
+        print(handleLeft)
+        # print(pointsOnly)
+
+        aniXML = etree.Element('root')
+        dataNode = etree.SubElement(aniXML, 'data')
+        partNode = etree.SubElement(dataNode, 'part', {'name': "1624E4_1"})
+        catNode = etree.SubElement(partNode, 'category', {'name': "misc"})
+        aniNode = etree.SubElement(catNode, 'animation', {'subname': "loop"})
+        locNode = etree.SubElement(aniNode, 'location')
+        X = etree.SubElement(locNode, 'X')
+        Y = etree.SubElement(locNode, 'Y')
+        Z = etree.SubElement(locNode, 'Z')
+        #for coord in ['X','Y','Z']:
+            
+        for xx in range(0,4):
+            frameNode = etree.SubElement(X, 'frame', {'id': str(xx*72000), 'value': str(pointsOnly[xx][0]), 'interpolation': "BEZIER"})
+            etree.SubElement(frameNode, 'handle_right', {'X': str(handleRight[xx][0]), 'Y': "0"}) #str(handleRight[xx][1])
+            etree.SubElement(frameNode, 'handle_left', {'X': str(handleLeft[xx][0]), 'Y': "0"}) #str(handleLeft[xx][1])
+        for xx in range(0,4):
+            frameNode = etree.SubElement(Y, 'frame', {'id': str(xx*72000), 'value': str(pointsOnly[xx][1]), 'interpolation': "BEZIER"})
+            etree.SubElement(frameNode, 'handle_right', {'X': str(handleRight[xx][0]), 'Y': "0"})
+            etree.SubElement(frameNode, 'handle_left', {'X': str(handleLeft[xx][0]), 'Y': "0"})
+        for xx in range(0,4):
+            frameNode = etree.SubElement(Z, 'frame', {'id': str(xx*72000), 'value': str(pointsOnly[xx][2]), 'interpolation': "BEZIER"})
+            etree.SubElement(frameNode, 'handle_right', {'X': str(handleRight[xx][0]), 'Y': "0"})
+            etree.SubElement(frameNode, 'handle_left', {'X': str(handleLeft[xx][0]), 'Y': "0"})
+
+        rotEulerNode = etree.SubElement(aniNode, 'rotation_euler')
+        metadataNode = etree.SubElement(aniXML, 'metadata')
+        conNode = etree.SubElement(metadataNode, 'connection', {'name': "part_deimos"})
+        aniMetaNode = etree.SubElement(conNode, 'animation', {'subname': "loop"})
+        etree.SubElement(aniMetaNode, 'frames', {'start': "0", 'end': "108000"})
+        
+        aniXMLFile = (targetPath + 'sample.anixml')
+        os.makedirs(os.path.dirname(aniXMLFile), exist_ok=True)
+        with open(aniXMLFile, "w") as f:
+            f.write(prettify(aniXML))
+        f.close()
+        # END ORBIT TESTING
+
+        
 
         return {'FINISHED'}
