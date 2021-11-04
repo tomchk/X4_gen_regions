@@ -589,7 +589,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
 
 
         # START ORBIT TESTING
-        vertArrayTest = [1E7,0,0,0,0,1E7,-1E7,0,0,0,0,-1E7,1E7,0,-100]
+        vertArrayTest = [1E7,0,0,0,1E7,0,-1E7,0,0,0,-1E7,0,1E7,-100,0,0,1E7,0,-1E7,0,0]
         createCurve(context, vertArrayTest)
         uscale = bpy.context.scene.unit_settings.scale_length
         obj = bpy.context.active_object
@@ -608,7 +608,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
 
         aniXML = etree.Element('root')
         dataNode = etree.SubElement(aniXML, 'data')
-        partNode = etree.SubElement(dataNode, 'part', {'name': "1624E4_1"})
+        partNode = etree.SubElement(dataNode, 'part', {'name': "part_deimos"})
         catNode = etree.SubElement(partNode, 'category', {'name': "misc"})
         aniNode = etree.SubElement(catNode, 'animation', {'subname': "loop"})
         locNode = etree.SubElement(aniNode, 'location')
@@ -617,18 +617,20 @@ class Gen_Regions_Operator(bpy.types.Operator):
         Z = etree.SubElement(locNode, 'Z')
         #for coord in ['X','Y','Z']:
             
-        for xx in range(0,4):
-            frameNode = etree.SubElement(X, 'frame', {'id': str(xx*72000), 'value': str(pointsOnly[xx][0]), 'interpolation': "BEZIER"})
-            etree.SubElement(frameNode, 'handle_right', {'X': str(handleRight[xx][0]), 'Y': "0"}) #str(handleRight[xx][1])
-            etree.SubElement(frameNode, 'handle_left', {'X': str(handleLeft[xx][0]), 'Y': "0"}) #str(handleLeft[xx][1])
-        for xx in range(0,4):
-            frameNode = etree.SubElement(Y, 'frame', {'id': str(xx*72000), 'value': str(pointsOnly[xx][1]), 'interpolation': "BEZIER"})
-            etree.SubElement(frameNode, 'handle_right', {'X': str(handleRight[xx][0]), 'Y': "0"})
-            etree.SubElement(frameNode, 'handle_left', {'X': str(handleLeft[xx][0]), 'Y': "0"})
-        for xx in range(0,4):
-            frameNode = etree.SubElement(Z, 'frame', {'id': str(xx*72000), 'value': str(pointsOnly[xx][2]), 'interpolation': "BEZIER"})
-            etree.SubElement(frameNode, 'handle_right', {'X': str(handleRight[xx][0]), 'Y': "0"})
-            etree.SubElement(frameNode, 'handle_left', {'X': str(handleLeft[xx][0]), 'Y': "0"})
+        for xx in range(0,5):
+            frameNode = etree.SubElement(X, 'frame', {'id': str(xx*54000), 'value': str(pointsOnly[xx+1][0]), 'interpolation': "BEZIER"})
+            # etree.SubElement(frameNode, 'handle_right', {'X': "0", 'Y': "0"}) #str(handleRight[xx][1])
+            # etree.SubElement(frameNode, 'handle_left', {'X': "0", 'Y': "0"}) #str(handleLeft[xx][1])
+            etree.SubElement(frameNode, 'handle_right', {'X': str(handleRight[xx+1][0]), 'Y': "0"}) #str(handleRight[xx][1])
+            etree.SubElement(frameNode, 'handle_left', {'X': str(handleLeft[xx+1][0]), 'Y': "0"}) #str(handleLeft[xx][1])
+        for xx in range(0,5):
+            frameNode = etree.SubElement(Y, 'frame', {'id': str(xx*54000), 'value': str(pointsOnly[xx+1][1]), 'interpolation': "BEZIER"})
+            etree.SubElement(frameNode, 'handle_right', {'X': "0", 'Y': "0"}) #str(handleRight[xx][1])
+            etree.SubElement(frameNode, 'handle_left', {'X': "0", 'Y': "0"}) #str(handleLeft[xx][1])
+        for xx in range(0,5):
+            frameNode = etree.SubElement(Z, 'frame', {'id': str(xx*54000), 'value': str(pointsOnly[xx+1][2]), 'interpolation': "BEZIER"})
+            etree.SubElement(frameNode, 'handle_right', {'X': str(handleRight[xx+1][2]), 'Y': "0"}) #str(handleRight[xx][1])
+            etree.SubElement(frameNode, 'handle_left', {'X': str(handleLeft[xx+1][2]), 'Y': "0"}) #str(handleLeft[xx][1])
 
         rotEulerNode = etree.SubElement(aniNode, 'rotation_euler')
         metadataNode = etree.SubElement(aniXML, 'metadata')
