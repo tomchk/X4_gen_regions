@@ -1,7 +1,6 @@
 """ Run:
 python "ani_parser.py"
 """
-
 """
 // Note that these add up to exactly 128 bytes
   float ValueX, ValueY, ValueZ;                          /< The key's actual value (position, rotation, etc.). 12*/
@@ -31,13 +30,23 @@ python "ani_parser.py"
       0;                /**< 24 Derivative Out value.  Is mutable to allow it being altered in the CalculateDerivatives() method./
   uint32_t AngleKey;                                        /** 28        // this will be set to non null if there is a key */
 """
-
 from struct import unpack
 import os
 
-targetPath = './'
-targetFile = (targetPath + 'ani_parsed.txt')
+import xml.etree.ElementTree as etree
+from xml.dom import minidom
+
+def prettify(elem):
+    rough_string = etree.tostring(elem, 'utf-8')
+    reparsed = minidom.parseString(rough_string)
+    return reparsed.toprettyxml(indent="  ")
+
 sourceFile = (r'D:\Games\Steam\steamapps\common\X4 Foundations\X4_extracted\extensions\ego_dlc_terran\assets\environments\cluster\CLUSTER_101_DATA.ANI')
+targetPath = './'
+
+aniXML = etree.Element('root')
+dataNode = etree.SubElement(aniXML, 'data')
+metadataNode = etree.SubElement(aniXML, 'metadata')
 
 # Header size in bytes
 HEADER_SIZE = 16
@@ -52,9 +61,10 @@ with open(sourceFile, 'rb') as reader:
     }
     print(header)
 
+    animDesc = []
     for i in range(header['NumAnims']):
         animData = unpack('64s64sIIIIIfII', reader.read(160))
-        animDesc = {
+        animDesc.append({
             'Name': animData[0].decode().split('\x00')[0],
             'Subname': animData[1].decode().split('\x00')[0],
             'NumPosKeys': animData[2],
@@ -63,26 +73,50 @@ with open(sourceFile, 'rb') as reader:
             'NumPreScaleKeys': animData[5],
             'NumPostScaleKeys': animData[6],
             'Duration': animData[7]
-        }
+        })
         print(animDesc)
 
+    #Cycle through each animation, processing positions, rotation, etc. keyframes of each
     for i in range(header['NumAnims']):
-        for ii in range(animDesc['NumPosKeys']):
-            kfData = unpack('fff4s4s4sffffffffffffffffffI3f3fI', reader.read(128))
-            keyframesList = ['PositionX','PositionY','PositionZ','InterpolationTypesX','InterpolationTypesY','InterpolationTypesZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
-            keyframes = {}
-            for iii in range(len(keyframesList)):
-                keyframes[keyframesList[iii]] = kfData[iii]
-            print(keyframes)
-        for ii in range(animDesc['NumRotKeys']):
-            kfData = unpack('fff4s4s4sffffffffffffffffffI3f3fI', reader.read(128))
-            keyframesList = ['RotationX','RotationY','RotationZ','InterpolationTypesX','InterpolationTypesY','InterpolationTypesZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
-            keyframes = {}
-            for iii in range(len(keyframesList)):
-                keyframes[keyframesList[iii]] = kfData[iii]
-            print(keyframes)
+        partNode = etree.SubElement(dataNode, 'part', {'name': animDesc[i]['Name']})
+        catNode = etree.SubElement(partNode, 'category', {'name': "misc"})
+        aniNode = etree.SubElement(catNode, 'animation', {'subname': animDesc[i]['Subname']})
+        conNode = etree.SubElement(metadataNode, 'connection', {'name': animDesc[i]['Name']})
+        aniMetaNode = etree.SubElement(conNode, 'animation', {'subname': animDesc[i]['Subname']})
+        etree.SubElement(aniMetaNode, 'frames', {'start': "0", 'end': "108000"}) #TODO Improve this
 
-os.makedirs(os.path.dirname(targetFile), exist_ok=True)
-with open(targetFile, "w") as f:
-    f.write(input)
+        locNode = etree.SubElement(aniNode, 'location')
+        XA = etree.SubElement(locNode, 'X')
+        YA = etree.SubElement(locNode, 'Y')
+        ZA = etree.SubElement(locNode, 'Z')
+        for iia in range(animDesc[i]['NumPosKeys']):
+            kfDataA = unpack('fff4s4s4sffffffffffffffffffI3f3fI', reader.read(128))
+            keyframesListA = ['PositionX','PositionY','PositionZ','InterpolationTypesX','InterpolationTypesY','InterpolationTypesZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
+            keyframesA = {}
+            for iiia in range(len(keyframesListA)):
+                keyframesA[keyframesListA[iiia]] = kfDataA[iiia]
+            print(keyframesA)
+            frameLocX = etree.SubElement(XA, 'frame', {'id': str(int(keyframesA['Time']*30))})
+            frameLocY = etree.SubElement(YA, 'frame', {'id': str(int(keyframesA['Time']*30))})
+            frameLocZ = etree.SubElement(ZA, 'frame', {'id': str(int(keyframesA['Time']*30))})
+
+        rotNode = etree.SubElement(aniNode, 'rotation_euler')
+        XB = etree.SubElement(locNode, 'X')
+        YB = etree.SubElement(locNode, 'Y')
+        ZB = etree.SubElement(locNode, 'Z')
+        for iib in range(animDesc[i]['NumRotKeys']):
+            frameRotX = etree.SubElement(XB, 'frame')
+            frameRotY = etree.SubElement(YB, 'frame')
+            frameRotZ = etree.SubElement(ZB, 'frame')
+            kfDataB = unpack('fff4s4s4sffffffffffffffffffI3f3fI', reader.read(128))
+            keyframesListB = ['RotationX','RotationY','RotationZ','InterpolationTypesX','InterpolationTypesY','InterpolationTypesZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
+            keyframesB = {}
+            for iiib in range(len(keyframesListB)):
+                keyframesB[keyframesListB[iiib]] = kfDataB[iiib]
+            print(keyframesB)
+
+aniXMLFile = (targetPath + 'target_ani.xml')
+os.makedirs(os.path.dirname(aniXMLFile), exist_ok=True)
+with open(aniXMLFile, "w") as f:
+    f.write(prettify(aniXML))
 f.close()
