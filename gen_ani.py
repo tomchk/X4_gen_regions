@@ -57,15 +57,14 @@ duration = []
 InterpolationTypeNameDict = {b'\x00\x00\x00\x00':"UNKNOWN", b'\x01\x00\x00\x00':"STEP", b'\x02\x00\x00\x00':"LINEAR", b'\x03\x00\x00\x00':"QUADRATIC", b'\x04\x00\x00\x00':"CUBIC", b'\x05\x00\x00\x00':"BEZIER", b'\x06\x00\x00\x00':"BEZIER_LINEARTIME", b'\x07\x00\x00\x00':"TCB"}
 
 with open(aniFile, 'wb') as writer:
-    writer.write(pack('IIII', numAnims, 16+numAnims*160, 1, 0))
+    writer.write(pack('IIII', numAnims, 16+numAnims*160, 1, 0)) # Write header
     for i in range(numAnims):
         partName = aniXML.findall("./data/part")[i].attrib['name']
         subName = aniXML.find("./data/part[@name='" + partName + "']/category/animation").attrib['subname']
         numPosKeys.append(len(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/location/X/frame")))
         numRotKeys.append(len(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/rotation_euler/X/frame")))
         duration.append(int((int(aniXML.find("./metadata/connection[@name='" + partName + "']/animation/frames").attrib['end']) - int(aniXML.find("./metadata/connection[@name='" + partName + "']/animation/frames").attrib['start']))/30))
-        writer.write(pack('64s64sIIIIIfII', 
-        #print((
+        writer.write(pack('64s64sIIIIIfII', # Write AnimDesc
             partName.encode(),
             subName.encode(),
             numPosKeys[i],
@@ -73,13 +72,10 @@ with open(aniFile, 'wb') as writer:
             0,
             0,
             0,
+            int(duration[i]),
             0,
-            0,
-            duration[i]
+            0
         ))
-
-    keyframesListA = ['PositionX','PositionY','PositionZ','InterpolationTypeX','InterpolationTypeY','InterpolationTypeZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
-    keyframesListB = ['RotationX','RotationY','RotationZ','InterpolationTypeX','InterpolationTypeY','InterpolationTypeZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
 
     # #Cycle through each animation, processing positions, rotation, etc. keyframes of each
     for i in range(numAnims):
@@ -96,7 +92,7 @@ with open(aniFile, 'wb') as writer:
                 list(InterpolationTypeNameDict.keys())[list(InterpolationTypeNameDict.values()).index(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/location/X/frame")[iia].attrib['interpolation'])],
                 list(InterpolationTypeNameDict.keys())[list(InterpolationTypeNameDict.values()).index(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/location/Y/frame")[iia].attrib['interpolation'])],
                 list(InterpolationTypeNameDict.keys())[list(InterpolationTypeNameDict.values()).index(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/location/Z/frame")[iia].attrib['interpolation'])],
-                float(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/location/X/frame")[iia].attrib['id'])/30,
+                float(float(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/location/X/frame")[iia].attrib['id'])/30),
                 float(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/location/X/frame/handle_right")[iia].attrib['X']),
                 float(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/location/X/frame/handle_right")[iia].attrib['Y']),
                 float(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/location/X/frame/handle_left")[iia].attrib['X']),
