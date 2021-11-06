@@ -1,5 +1,5 @@
 """ Run:
-python "C:\Games\Steam\steamapps\common\X4 Foundations\extensions\scenic_shws/ani_parser.py"
+python "ani_parser.py"
 """
 
 """
@@ -35,7 +35,7 @@ python "C:\Games\Steam\steamapps\common\X4 Foundations\extensions\scenic_shws/an
 from struct import unpack
 import os
 
-targetPath = 'D:/X4_out/ani_parser/'
+targetPath = './'
 targetFile = (targetPath + 'ani_parsed.txt')
 sourceFile = (r'D:\Games\Steam\steamapps\common\X4 Foundations\X4_extracted\extensions\ego_dlc_terran\assets\environments\cluster\CLUSTER_101_DATA.ANI')
 
@@ -51,6 +51,7 @@ with open(sourceFile, 'rb') as reader:
         'Padding': headerData[3],
     }
     print(header)
+
     for i in range(header['NumAnims']):
         animData = unpack('64s64sIIIIIfII', reader.read(160))
         animDesc = {
@@ -64,33 +65,24 @@ with open(sourceFile, 'rb') as reader:
             'Duration': animData[7]
         }
         print(animDesc)
+
     for i in range(header['NumAnims']):
         for ii in range(animDesc['NumPosKeys']):
-            data = unpack('3f4s4s4s4s2f2f2f2f2f2ffffffI3f3fI', reader.read(128))
-            keyframes = {
-                'Position': data[0],
-                'InterpolationTypesX': data[1],
-                'InterpolationTypesY': data[2],
-                'InterpolationTypesZ': data[3],
-                'Time': data[4],
-                'ControlPoint': data[5],
-                'ControlPoint': data[6],
-                'ControlPoint': data[7],
-                'ControlPoint': data[8],
-                'ControlPoint': data[9],
-                'ControlPoint': data[10],
-                'Tension': data[11],
-                'Continuity': data[12],
-                'Bias': data[13],
-                'EaseIn': data[14],
-                'EaseOut': data[15],
-                'DerivIn': data[16],
-                'DerivOut': data[17],
-                'AngleKey': data[18]
-            }
+            kfData = unpack('fff4s4s4sffffffffffffffffffI3f3fI', reader.read(128))
+            keyframesList = ['PositionX','PositionY','PositionZ','InterpolationTypesX','InterpolationTypesY','InterpolationTypesZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
+            keyframes = {}
+            for iii in range(len(keyframesList)):
+                keyframes[keyframesList[iii]] = kfData[iii]
+            print(keyframes)
+        for ii in range(animDesc['NumRotKeys']):
+            kfData = unpack('fff4s4s4sffffffffffffffffffI3f3fI', reader.read(128))
+            keyframesList = ['RotationX','RotationY','RotationZ','InterpolationTypesX','InterpolationTypesY','InterpolationTypesZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
+            keyframes = {}
+            for iii in range(len(keyframesList)):
+                keyframes[keyframesList[iii]] = kfData[iii]
             print(keyframes)
 
-# os.makedirs(os.path.dirname(targetFile), exist_ok=True)
-# with open(targetFile, "w") as f:
-#     f.write(input)
-# f.close()
+os.makedirs(os.path.dirname(targetFile), exist_ok=True)
+with open(targetFile, "w") as f:
+    f.write(input)
+f.close()
