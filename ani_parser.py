@@ -50,6 +50,7 @@ metadataNode = etree.SubElement(aniXML, 'metadata')
 
 # Header size in bytes
 HEADER_SIZE = 16
+InterpolationTypeNameDict = {b'\x00\x00\x00\x00':"UNKNOWN", b'\x01\x00\x00\x00':"STEP", b'\x02\x00\x00\x00':"LINEAR", b'\x03\x00\x00\x00':"QUADRATIC", b'\x04\x00\x00\x00':"CUBIC", b'\x05\x00\x00\x00':"BEZIER", b'\x06\x00\x00\x00':"BEZIER_LINEARTIME", b'\x07\x00\x00\x00':"TCB"}
 
 with open(sourceFile, 'rb') as reader:
     headerData = unpack('IIII', reader.read(HEADER_SIZE))
@@ -91,29 +92,41 @@ with open(sourceFile, 'rb') as reader:
         ZA = etree.SubElement(locNode, 'Z')
         for iia in range(animDesc[i]['NumPosKeys']):
             kfDataA = unpack('fff4s4s4sffffffffffffffffffI3f3fI', reader.read(128))
-            keyframesListA = ['PositionX','PositionY','PositionZ','InterpolationTypesX','InterpolationTypesY','InterpolationTypesZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
+            keyframesListA = ['PositionX','PositionY','PositionZ','InterpolationTypeX','InterpolationTypeY','InterpolationTypeZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
             keyframesA = {}
             for iiia in range(len(keyframesListA)):
                 keyframesA[keyframesListA[iiia]] = kfDataA[iiia]
             print(keyframesA)
-            frameLocX = etree.SubElement(XA, 'frame', {'id': str(int(keyframesA['Time']*30))})
-            frameLocY = etree.SubElement(YA, 'frame', {'id': str(int(keyframesA['Time']*30))})
-            frameLocZ = etree.SubElement(ZA, 'frame', {'id': str(int(keyframesA['Time']*30))})
+            frameLocX = etree.SubElement(XA, 'frame', {'id': str(int(keyframesA['Time']*30)), 'value': str(keyframesA['PositionX']), 'interpolation': InterpolationTypeNameDict[keyframesA['InterpolationTypeX']]})
+            handleRightLocX = etree.SubElement(frameLocX, 'handle_right', {'X': str(keyframesA['CPX1x']), 'Y': str(keyframesA['CPX1y'])})
+            handleLeftLocX = etree.SubElement(frameLocX, 'handle_left', {'X': str(keyframesA['CPX2x']), 'Y': str(keyframesA['CPX2y'])})
+            frameLocY = etree.SubElement(YA, 'frame', {'id': str(int(keyframesA['Time']*30)), 'value': str(keyframesA['PositionY']), 'interpolation': InterpolationTypeNameDict[keyframesA['InterpolationTypeY']]})
+            handleRightLocY = etree.SubElement(frameLocY, 'handle_right', {'X': str(keyframesA['CPY1x']), 'Y': str(keyframesA['CPY1y'])})
+            handleLeftLocY = etree.SubElement(frameLocY, 'handle_left', {'X': str(keyframesA['CPY2x']), 'Y': str(keyframesA['CPY2y'])})
+            frameLocZ = etree.SubElement(ZA, 'frame', {'id': str(int(keyframesA['Time']*30)), 'value': str(keyframesA['PositionZ']), 'interpolation': InterpolationTypeNameDict[keyframesA['InterpolationTypeZ']]})
+            handleRightLocZ = etree.SubElement(frameLocZ, 'handle_right', {'X': str(keyframesA['CPZ1x']), 'Y': str(keyframesA['CPZ1y'])})
+            handleLeftLocZ = etree.SubElement(frameLocZ, 'handle_left', {'X': str(keyframesA['CPZ2x']), 'Y': str(keyframesA['CPZ2y'])})
 
         rotNode = etree.SubElement(aniNode, 'rotation_euler')
-        XB = etree.SubElement(locNode, 'X')
-        YB = etree.SubElement(locNode, 'Y')
-        ZB = etree.SubElement(locNode, 'Z')
+        XB = etree.SubElement(rotNode, 'X')
+        YB = etree.SubElement(rotNode, 'Y')
+        ZB = etree.SubElement(rotNode, 'Z')
         for iib in range(animDesc[i]['NumRotKeys']):
-            frameRotX = etree.SubElement(XB, 'frame')
-            frameRotY = etree.SubElement(YB, 'frame')
-            frameRotZ = etree.SubElement(ZB, 'frame')
             kfDataB = unpack('fff4s4s4sffffffffffffffffffI3f3fI', reader.read(128))
-            keyframesListB = ['RotationX','RotationY','RotationZ','InterpolationTypesX','InterpolationTypesY','InterpolationTypesZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
+            keyframesListB = ['RotationX','RotationY','RotationZ','InterpolationTypeX','InterpolationTypeY','InterpolationTypeZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
             keyframesB = {}
             for iiib in range(len(keyframesListB)):
                 keyframesB[keyframesListB[iiib]] = kfDataB[iiib]
             print(keyframesB)
+            frameRotX = etree.SubElement(XB, 'frame', {'id': str(int(keyframesB['Time']*30)), 'value': str(keyframesB['RotationX']), 'interpolation': InterpolationTypeNameDict[keyframesB['InterpolationTypeX']]})
+            handleRightRotX = etree.SubElement(frameRotX, 'handle_right', {'X': str(keyframesA['CPX1x']), 'Y': str(keyframesA['CPX1y'])})
+            handleLeftRotX = etree.SubElement(frameRotX, 'handle_left', {'X': str(keyframesA['CPX2x']), 'Y': str(keyframesA['CPX2y'])})
+            frameRotY = etree.SubElement(YB, 'frame', {'id': str(int(keyframesB['Time']*30)), 'value': str(keyframesB['RotationY']), 'interpolation': InterpolationTypeNameDict[keyframesB['InterpolationTypeY']]})
+            handleRightRotY = etree.SubElement(frameRotY, 'handle_right', {'X': str(keyframesA['CPY1x']), 'Y': str(keyframesA['CPY1y'])})
+            handleLeftRotY = etree.SubElement(frameRotY, 'handle_left', {'X': str(keyframesA['CPY2x']), 'Y': str(keyframesA['CPY2y'])})
+            frameRotZ = etree.SubElement(ZB, 'frame', {'id': str(int(keyframesB['Time']*30)), 'value': str(keyframesB['RotationZ']), 'interpolation': InterpolationTypeNameDict[keyframesB['InterpolationTypeZ']]})
+            handleRightRotZ = etree.SubElement(frameRotZ, 'handle_right', {'X': str(keyframesA['CPZ1x']), 'Y': str(keyframesA['CPZ1y'])})
+            handleLeftRotZ = etree.SubElement(frameRotZ, 'handle_left', {'X': str(keyframesA['CPZ2x']), 'Y': str(keyframesA['CPZ2y'])})
 
 aniXMLFile = (targetPath + 'target_ani.xml')
 os.makedirs(os.path.dirname(aniXMLFile), exist_ok=True)
