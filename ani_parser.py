@@ -41,7 +41,7 @@ def prettify(elem):
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="  ")
 
-#sourceFile = (r'D:\Games\Steam\steamapps\common\X4 Foundations\X4_extracted\extensions\ego_dlc_terran\assets\environments\cluster\CLUSTER_101_DATA.ANI')
+# sourceFile = (r'D:\Games\Steam\steamapps\common\X4 Foundations\X4_extracted\extensions\ego_dlc_terran\assets\environments\cluster\CLUSTER_101_DATA.ANI')
 sourceFile = './target.ani'
 targetPath = './'
 
@@ -77,8 +77,8 @@ with open(sourceFile, 'rb') as reader:
             'Duration': animData[7]
         })
     print(animDesc)
-    keyframesListA = ['PositionX','PositionY','PositionZ','InterpolationTypeX','InterpolationTypeY','InterpolationTypeZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
-    keyframesListB = ['RotationX','RotationY','RotationZ','InterpolationTypeX','InterpolationTypeY','InterpolationTypeZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
+    keyframesListA = ['PositionX','PositionY','PositionZ','InterpolationTypeX','InterpolationTypeY','InterpolationTypeZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','Deriv','DerivInX','DerivInY','DerivInZ','DerivOutX','DerivOutY','DerivOutZ','AngleKey']
+    keyframesListB = ['RotationX','RotationY','RotationZ','InterpolationTypeX','InterpolationTypeY','InterpolationTypeZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','Deriv','DerivInX','DerivInY','DerivInZ','DerivOutX','DerivOutY','DerivOutZ','AngleKey']
 
     #Cycle through each animation, processing positions, rotation, etc. keyframes of each
     for i in range(header['NumAnims']):
@@ -95,7 +95,7 @@ with open(sourceFile, 'rb') as reader:
         YA = etree.SubElement(locNode, 'Y')
         ZA = etree.SubElement(locNode, 'Z')
         for iia in range(animDesc[i]['NumPosKeys']):
-            kfDataA = unpack('fff4s4s4sffffffffffffffffffI3f3fI', reader.read(128))
+            kfDataA = unpack('fff4s4s4sffffffffffffffffffIffffffI', reader.read(128))
             keyframesA = {}
             for iiia in range(len(keyframesListA)):
                 keyframesA[keyframesListA[iiia]] = kfDataA[iiia]
@@ -114,7 +114,7 @@ with open(sourceFile, 'rb') as reader:
         YB = etree.SubElement(rotNode, 'Y')
         ZB = etree.SubElement(rotNode, 'Z')
         for iib in range(animDesc[i]['NumRotKeys']):
-            kfDataB = unpack('fff4s4s4sffffffffffffffffffI3f3fI', reader.read(128))
+            kfDataB = unpack('fff4s4s4sffffffffffffffffffIffffffI', reader.read(128))
             keyframesB = {}
             for iiib in range(len(keyframesListB)):
                 keyframesB[keyframesListB[iiib]] = kfDataB[iiib]
