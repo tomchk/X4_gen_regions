@@ -77,6 +77,9 @@ with open(sourceFile, 'rb') as reader:
         })
         print(animDesc)
 
+    keyframesListA = ['PositionX','PositionY','PositionZ','InterpolationTypeX','InterpolationTypeY','InterpolationTypeZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
+    keyframesListB = ['RotationX','RotationY','RotationZ','InterpolationTypeX','InterpolationTypeY','InterpolationTypeZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
+
     #Cycle through each animation, processing positions, rotation, etc. keyframes of each
     for i in range(header['NumAnims']):
         partNode = etree.SubElement(dataNode, 'part', {'name': animDesc[i]['Name']})
@@ -84,7 +87,7 @@ with open(sourceFile, 'rb') as reader:
         aniNode = etree.SubElement(catNode, 'animation', {'subname': animDesc[i]['Subname']})
         conNode = etree.SubElement(metadataNode, 'connection', {'name': animDesc[i]['Name']})
         aniMetaNode = etree.SubElement(conNode, 'animation', {'subname': animDesc[i]['Subname']})
-        etree.SubElement(aniMetaNode, 'frames', {'start': "0", 'end': "108000"}) #TODO Improve this
+        etree.SubElement(aniMetaNode, 'frames', {'start': str(0), 'end': str(int(animDesc[i]['Duration'])*30)}) #TODO Improve this -- can't just assume duration is same as end!
 
         locNode = etree.SubElement(aniNode, 'location')
         XA = etree.SubElement(locNode, 'X')
@@ -92,7 +95,6 @@ with open(sourceFile, 'rb') as reader:
         ZA = etree.SubElement(locNode, 'Z')
         for iia in range(animDesc[i]['NumPosKeys']):
             kfDataA = unpack('fff4s4s4sffffffffffffffffffI3f3fI', reader.read(128))
-            keyframesListA = ['PositionX','PositionY','PositionZ','InterpolationTypeX','InterpolationTypeY','InterpolationTypeZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
             keyframesA = {}
             for iiia in range(len(keyframesListA)):
                 keyframesA[keyframesListA[iiia]] = kfDataA[iiia]
@@ -113,7 +115,6 @@ with open(sourceFile, 'rb') as reader:
         ZB = etree.SubElement(rotNode, 'Z')
         for iib in range(animDesc[i]['NumRotKeys']):
             kfDataB = unpack('fff4s4s4sffffffffffffffffffI3f3fI', reader.read(128))
-            keyframesListB = ['RotationX','RotationY','RotationZ','InterpolationTypeX','InterpolationTypeY','InterpolationTypeZ','Time','CPX1x','CPX1y','CPX2x','CPX2y','CPY1x','CPY1y','CPY2x','CPY2y','CPZ1x','CPZ1y','CPZ2x','CPZ2y','Tension','Continuity','Bias','EaseIn','EaseOut','DerivIn','DerivOut','AngleKey']
             keyframesB = {}
             for iiib in range(len(keyframesListB)):
                 keyframesB[keyframesListB[iiib]] = kfDataB[iiib]
@@ -127,6 +128,8 @@ with open(sourceFile, 'rb') as reader:
             frameRotZ = etree.SubElement(ZB, 'frame', {'id': str(int(keyframesB['Time']*30)), 'value': str(keyframesB['RotationZ']), 'interpolation': InterpolationTypeNameDict[keyframesB['InterpolationTypeZ']]})
             handleRightRotZ = etree.SubElement(frameRotZ, 'handle_right', {'X': str(keyframesB['CPZ1x']), 'Y': str(keyframesB['CPZ1y'])})
             handleLeftRotZ = etree.SubElement(frameRotZ, 'handle_left', {'X': str(keyframesB['CPZ2x']), 'Y': str(keyframesB['CPZ2y'])})
+
+
 
 aniXMLFile = (targetPath + 'target_ani.xml')
 os.makedirs(os.path.dirname(aniXMLFile), exist_ok=True)
