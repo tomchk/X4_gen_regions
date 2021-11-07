@@ -72,8 +72,9 @@ class Gen_Orbits_Operator(bpy.types.Operator):
         mytool = context.scene.my_tool
         source = mytool.source
         target = mytool.target
+        radius = 1E7 #TODO get from UI or cluster xML
         
-        self.AddOrbitAnim(1E7,1200,60,0,0)
+        self.AddOrbitAnim(radius,1200,60,0,0)
 
         def prettify(elem):
             """Return a pretty-printed XML string for the Element.
@@ -83,7 +84,7 @@ class Gen_Orbits_Operator(bpy.types.Operator):
             return reparsed.toprettyxml(indent="  ")
 
 
-        def keyFrameGenerate(index,coordElem,fcs):
+        def keyFrameOutput(index,coordElem,fcs):
             for p in fcs[index].keyframe_points:
                 frameNode = etree.SubElement(coordElem, 'frame', {'id': str(p.co[0]), 'value': str(p.co[1]), 'interpolation': p.interpolation.replace('CONSTANT','STEP')})
                 etree.SubElement(frameNode, 'handle_right', {'X': str(p.handle_right[0]), 'Y': str(p.handle_right[1])})
@@ -94,8 +95,8 @@ class Gen_Orbits_Operator(bpy.types.Operator):
         dataNode = etree.SubElement(aniXML, 'data')
         metadataNode = etree.SubElement(aniXML, 'metadata')
         
-        for obj in bpy.data.objects:
-            if obj.name.startswith("part_asteroids"): #TODO Change this, and adjust axes?
+        for obj in bpy.context.selected_objects:
+            if len(obj.name) > 0: #TODO Change this, and adjust axes? if obj.name.startswith("part_asteroids"):
                 fcurves = obj.animation_data.action.fcurves
                 partNode = etree.SubElement(dataNode, 'part', {'name': obj.name})
                 catNode = etree.SubElement(partNode, 'category', {'name': "misc"})
@@ -112,34 +113,34 @@ class Gen_Orbits_Operator(bpy.types.Operator):
                     if fcurves[xyz].data_path == 'location':
                         if xyz == 0:
                             X = etree.SubElement(locNode, 'X')
-                            keyFrameGenerate(xyz,X,fcurves)
+                            keyFrameOutput(xyz,X,fcurves)
                         if xyz == 1:
                             Y = etree.SubElement(locNode, 'Y')
-                            keyFrameGenerate(xyz,Y,fcurves)
+                            keyFrameOutput(xyz,Y,fcurves)
                         if xyz == 2:
                             Z = etree.SubElement(locNode, 'Z')
-                            keyFrameGenerate(xyz,Z,fcurves)
+                            keyFrameOutput(xyz,Z,fcurves)
                     if fcurves[xyz].data_path == 'rotation_euler':
                         if xyz == 0:
                             X = etree.SubElement(rotEulerNode, 'X')
-                            keyFrameGenerate(xyz,X,fcurves)
+                            keyFrameOutput(xyz,X,fcurves)
                         if xyz == 1:
                             Y = etree.SubElement(rotEulerNode, 'Y')
-                            keyFrameGenerate(xyz,Y,fcurves)
+                            keyFrameOutput(xyz,Y,fcurves)
                         if xyz == 2:
                             Z = etree.SubElement(rotEulerNode, 'Z')
-                            keyFrameGenerate(xyz,Z,fcurves)
+                            keyFrameOutput(xyz,Z,fcurves)
                     if fcurves[xyz].data_path != 'location' and fcurves[xyz].data_path != 'rotation_euler': # TODO Handle better; Not finished!
                         otherDataPathNode = etree.SubElement(aniNode, fcurves[xyz].data_path)
                         if xyz == 0:
                             X = etree.SubElement(otherDataPathNode, 'X')
-                            keyFrameGenerate(xyz,X,fcurves)
+                            keyFrameOutput(xyz,X,fcurves)
                         if xyz == 1:
                             Y = etree.SubElement(otherDataPathNode, 'Y')
-                            keyFrameGenerate(xyz,Y,fcurves)
+                            keyFrameOutput(xyz,Y,fcurves)
                         if xyz == 2:
                             Z = etree.SubElement(otherDataPathNode, 'Z')
-                            keyFrameGenerate(xyz,Z,fcurves)
+                            keyFrameOutput(xyz,Z,fcurves)
 
                     #print("%s[%i]" % (fcurves[xyz].data_path, fcurves[xyz].array_index)) # data_path is location, rotation_euler, etc.; array_index is x=0, y=1, z=2
 
@@ -178,20 +179,43 @@ class Gen_Orbits_Operator(bpy.types.Operator):
     # END Blender Addons
 
     # START ORBIT ANIMATION GENERATION
-    def AddOrbitAnim(self,radius=1E7,frames=108000,numKeyframes=4,rotationCenterX=0,rotationCenterY=0):
-        for obj in bpy.data.objects:
-            if obj.name.startswith("part_asteroids"): #TODO Change to planet?
+    def AddOrbitAnim(self,radius=1E7,frames=108000,numKeyframes=60,rotationCenterX=0,rotationCenterY=0):
+        for obj in bpy.context.selected_objects:
+            if len(obj.name) > 0: #TODO Change this, and adjust axes? if obj.name.startswith("part_asteroids"):
                 angle = radians(0)
                 omega = radians(360)/numKeyframes
 
-                obj.location.x = rotationCenterX + radius * cos(angle) # Starting position x
-                obj.location.y = rotationCenterY - radius * sin(angle) # Starting position y
+                obj.location.x = rotationCenterX + radius * cos(angle) # Starting x
+                obj.location.z = rotationCenterY - radius * sin(angle) # Starting y
+                obj.location.y = 0
 
                 i = 0
                 while angle <= radians(360):
                     obj.keyframe_insert(data_path="location",frame=i)
                     angle = angle + omega
                     obj.location.x = obj.location.x + radius * omega * cos(angle + pi / 2) # New x
-                    obj.location.y = obj.location.y - radius * omega * sin(angle + pi / 2) # New y
+                    obj.location.z = obj.location.z - radius * omega * sin(angle + pi / 2) # New y
                     i += frames/numKeyframes
+
+    def AddOrbitAnimOld(self,radius=1E7,frames=108000,numKeyframes=4,rotationCenterX=0,rotationCenterY=0):
+        for obj in bpy.context.selected_objects:
+            if len(obj.name) > 0: #TODO Change this, and adjust axes? if obj.name.startswith("part_asteroids"):
+
+                obj.location.x = rotationCenterX + radius # Starting x
+                obj.location.z = rotationCenterY - 0 # Starting y
+                obj.location.y = 0 # z
+
+                obj.keyframe_insert(data_path="location",frame=0)
+                obj.location.x = obj.location.x + 0 # New x
+                obj.location.z = obj.location.z - radius # New y
+                obj.keyframe_insert(data_path="location",frame=frames*1/4)
+                obj.location.x = obj.location.x - radius # New x
+                obj.location.z = obj.location.z - 0 # New y
+                obj.keyframe_insert(data_path="location",frame=frames*2/4)
+                obj.location.x = obj.location.x - 0 # New x
+                obj.location.z = obj.location.z + radius # New y
+                obj.keyframe_insert(data_path="location",frame=frames*3/4)
+                obj.location.x = obj.location.x + radius # New x
+                obj.location.z = obj.location.z + 0 # New y
+                obj.keyframe_insert(data_path="location",frame=frames*4/4)
     # END ORBIT ANIMATION GENERATION

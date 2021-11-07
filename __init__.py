@@ -30,6 +30,7 @@ bl_info = {
 import bpy
 
 from . gen_regions import Gen_Regions_Operator
+from . gen_orbits import Gen_Orbits_Operator
 from . gen_panel import MyProperties
 from . gen_panel import Gen_PT_Panel
 
@@ -42,7 +43,7 @@ from bpy.types import (Panel,
                        )
 
 
-classes = (Gen_Regions_Operator, MyProperties, Gen_PT_Panel)
+classes = (Gen_Regions_Operator, Gen_Orbits_Operator, MyProperties, Gen_PT_Panel)
 
 #register, unregister = bpy.utils.register_classes_factory(classes)
 
