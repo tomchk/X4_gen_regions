@@ -6,10 +6,11 @@ import os
 
 import xml.etree.ElementTree as etree
 
-sourceFile = (r'./target_ani.xml')
+sourceFile = r'D:\X4_out\X4_gen_regions\testout.anixml'
+# sourceFile = (r'./target_ani.xml')
 targetPath = './'
 
-aniFile = (targetPath + 'target.ani')
+aniFile = (targetPath + 'testout.ani')
 os.makedirs(os.path.dirname(aniFile), exist_ok=True)
 
 aniXML = etree.parse(sourceFile)

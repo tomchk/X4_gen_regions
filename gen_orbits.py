@@ -73,7 +73,7 @@ class Gen_Orbits_Operator(bpy.types.Operator):
         source = mytool.source
         target = mytool.target
         
-        self.AddOrbitAnim(1E7,108000,60,0,0)
+        self.AddOrbitAnim(1E7,1200,60,0,0)
 
         def prettify(elem):
             """Return a pretty-printed XML string for the Element.
@@ -92,16 +92,16 @@ class Gen_Orbits_Operator(bpy.types.Operator):
 
         aniXML = etree.Element('root')
         dataNode = etree.SubElement(aniXML, 'data')
+        metadataNode = etree.SubElement(aniXML, 'metadata')
         
         for obj in bpy.data.objects:
-            if obj.name.startswith("part"): #TODO
+            if obj.name.startswith("part_asteroids"): #TODO Change this, and adjust axes?
                 fcurves = obj.animation_data.action.fcurves
                 partNode = etree.SubElement(dataNode, 'part', {'name': obj.name})
                 catNode = etree.SubElement(partNode, 'category', {'name': "misc"})
                 aniNode = etree.SubElement(catNode, 'animation', {'subname': "loop"})
                 locNode = etree.SubElement(aniNode, 'location')
                 rotEulerNode = etree.SubElement(aniNode, 'rotation_euler')
-                metadataNode = etree.SubElement(aniXML, 'metadata')
                 conNode = etree.SubElement(metadataNode, 'connection', {'name': obj.name})
                 aniMetaNode = etree.SubElement(conNode, 'animation', {'subname': "loop"})
                 frame_start, frame_end = map(int, obj.animation_data.action.frame_range)
@@ -180,7 +180,7 @@ class Gen_Orbits_Operator(bpy.types.Operator):
     # START ORBIT ANIMATION GENERATION
     def AddOrbitAnim(self,radius=1E7,frames=108000,numKeyframes=4,rotationCenterX=0,rotationCenterY=0):
         for obj in bpy.data.objects:
-            if obj.name.startswith("part"): #TODO Change to planet?
+            if obj.name.startswith("part_asteroids"): #TODO Change to planet?
                 angle = radians(0)
                 omega = radians(360)/numKeyframes
 
@@ -189,9 +189,9 @@ class Gen_Orbits_Operator(bpy.types.Operator):
 
                 i = 0
                 while angle <= radians(360):
+                    obj.keyframe_insert(data_path="location",frame=i)
                     angle = angle + omega
                     obj.location.x = obj.location.x + radius * omega * cos(angle + pi / 2) # New x
                     obj.location.y = obj.location.y - radius * omega * sin(angle + pi / 2) # New y
-                    obj.keyframe_insert(data_path="location",frame=i)
                     i += frames/numKeyframes
     # END ORBIT ANIMATION GENERATION
