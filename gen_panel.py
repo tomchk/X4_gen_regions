@@ -67,3 +67,4 @@ class Gen_PT_Panel(bpy.types.Panel):
 
         row = layout.row()
         row.operator("view3d.gen_regions", text="Generate Regions")
+        row.operator("view3d.gen_orbits", text="Generate Orbits")
