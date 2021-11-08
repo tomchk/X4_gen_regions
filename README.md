@@ -17,7 +17,9 @@ Most users should follow these steps:
 
 (4) Click the last 2 buttons in order (first AniXML, then Ani) (naturally I can combine these buttons, but it's useful having them separate right now). 
 
-The output anixml and ani files should appear in your target folder. You just need to place and rename them (typically like CLUSTER_100_DATA.ani or whatever the data folder is for the component).
+(5) The output anixml and ani files should appear in your target folder. You just need to place and rename them (typically like CLUSTER_100_DATA.ani or whatever the data folder is for the component).
+
+(6) You should follow the vanilla pattern for adding the animations to your component XML--the information for that is in the metadata node of the anixml file. I have not tested what exactly can be omitted, but I suspect at least that you need to add "animation" to the "tag".
 
 The other buttons are for creating randomized regions from a sectors.xml file (unrelated, just currently part of this addon) and generating orbits for things like planets. Let's get animating!
 
