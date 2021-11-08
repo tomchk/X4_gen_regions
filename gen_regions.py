@@ -17,6 +17,45 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
+from bpy_extras import object_utils
+from mathutils import Matrix, Vector
+from math import (
+    sin, cos, pi
+)
+import mathutils.noise as Noise
+
+
+try:
+    from lxml import etree
+    print("running with lxml.etree")
+except ImportError:
+    try:
+        # Python 2.5
+        import xml.etree.cElementTree as etree
+        print("running with cElementTree on Python 2.5+")
+    except ImportError:
+        try:
+            # Python 2.5
+            import xml.etree.ElementTree as etree
+            print("running with ElementTree on Python 2.5+")
+        except ImportError:
+            try:
+                # normal cElementTree install
+                import cElementTree as etree
+                print("running with cElementTree")
+            except ImportError:
+                try:
+                    # normal ElementTree install
+                    import elementtree.ElementTree as etree
+                    print("running with ElementTree")
+                except ImportError:
+                    print("Failed to import ElementTree from any known place")
+
+import os
+import datetime
+from pathlib import Path
+from xml.dom import minidom
+
 
 class Gen_Regions_Operator(bpy.types.Operator):
     bl_idname = "view3d.gen_regions"
@@ -32,45 +71,6 @@ class Gen_Regions_Operator(bpy.types.Operator):
         source = mytool.source
         target = mytool.target
         
-        try:
-            from lxml import etree
-            print("running with lxml.etree")
-        except ImportError:
-            try:
-                # Python 2.5
-                import xml.etree.cElementTree as etree
-                print("running with cElementTree on Python 2.5+")
-            except ImportError:
-                try:
-                    # Python 2.5
-                    import xml.etree.ElementTree as etree
-                    print("running with ElementTree on Python 2.5+")
-                except ImportError:
-                    try:
-                        # normal cElementTree install
-                        import cElementTree as etree
-                        print("running with cElementTree")
-                    except ImportError:
-                        try:
-                            # normal ElementTree install
-                            import elementtree.ElementTree as etree
-                            print("running with ElementTree")
-                        except ImportError:
-                            print("Failed to import ElementTree from any known place")
-
-        import os
-        import datetime
-        from pathlib import Path
-        from xml.dom import minidom
-
-        import bpy
-        from bpy_extras import object_utils
-        from mathutils import Matrix, Vector
-        from math import (
-            sin, cos, pi
-        )
-        import mathutils.noise as Noise
-
 
         def prettify(elem):
             """Return a pretty-printed XML string for the Element.
@@ -78,187 +78,6 @@ class Gen_Regions_Operator(bpy.types.Operator):
             rough_string = etree.tostring(elem, 'utf-8')
             reparsed = minidom.parseString(rough_string)
             return reparsed.toprettyxml(indent="  ")
-
-
-        # START Blender Addons
-        def randnum(low=0.0, high=1.0, seed=0):
-            """
-            randnum( low=0.0, high=1.0, seed=0 )
-
-            Create random number
-            Parameters:
-                low - lower range
-                    (type=float)
-                high - higher range
-                    (type=float)
-                seed - the random seed number, if seed == 0, the current time will be used instead
-                    (type=int)
-            Returns:
-                a random number
-                    (type=float)
-            """
-
-            Noise.seed_set(seed)
-            rnum = Noise.random()
-            rnum = rnum * (high - low)
-            rnum = rnum + low
-            return rnum
-
-
-        def vTurbNoise(x, y, z, iScale=0.25, Size=1.0, Depth=6, Hard=False, Basis=0, Seed=0):
-            """
-            vTurbNoise((x,y,z), iScale=0.25, Size=1.0,
-                    Depth=6, Hard=0, Basis=0, Seed=0 )
-
-            Create randomised vTurbulence noise
-
-            Parameters:
-                xyz - (x,y,z) float values.
-                    (type=3-float tuple)
-                iScale - noise intensity scale
-                    (type=float)
-                Size - noise size
-                    (type=float)
-                Depth - number of noise values added.
-                    (type=int)
-                Hard - noise hardness: True - soft noise; False - hard noise
-                    (type=int)
-                basis - type of noise used for turbulence
-                    (type=int)
-                Seed - the random seed number, if seed == 0, the current time will be used instead
-                    (type=int)
-            Returns:
-                the generated turbulence vector.
-                    (type=3-float list)
-            """
-            rand = randnum(-100, 100, Seed)
-            if Basis == 9:
-                Basis = 14
-            vec = Vector((x / Size + rand, y / Size + rand, z / Size + rand))
-            vTurb = Noise.turbulence_vector(vec, Depth, Hard)
-            # mathutils.noise.turbulence_vector(position, octaves, hard, noise_basis='PERLIN_ORIGINAL', amplitude_scale=0.5, frequency_scale=2.0)
-            tx = vTurb[0] * iScale
-            ty = vTurb[1] * iScale
-            tz = vTurb[2] * iScale
-            return tx, ty, tz
-
-
-        def NoiseCurve(type=2, number=14, length=8.0, size=10,
-                    scale=[0.5, 0.5, 0.5], octaves=2, basis=0, seed=0):
-            """
-            Create noise curve
-
-            Parameters:
-                number - number of points
-                    (type=int)
-                length - curve length
-                    (type=float)
-                size - noise size
-                    (type=float)
-                scale - noise intensity scale x,y,z
-                    (type=list)
-                basis - noise basis
-                    (type=int)
-                seed - noise random seed
-                    (type=int)
-                type - noise curve type
-                    (type=int)
-            Returns:
-                a list with lists of x,y,z coordinates for curve points, [[x,y,z],[x,y,z],...n]
-                (type=list)
-            """
-
-            newpoints = []
-            step = (length / number)
-            i = 0
-            if type == 1:
-                # noise circle
-                while i < number:
-                    t = i * step
-                    v = vTurbNoise(t, t, t, 1.0, size, octaves, False, basis, seed)
-                    x = sin(t * pi) + (v[0] * scale[0])
-                    y = cos(t * pi) + (v[1] * scale[1])
-                    z = v[2] * scale[2]
-                    newpoints.append([x, y, z])
-                    i += 1
-            elif type == 2:
-                # noise knot / ball
-                while i < number:
-                    t = i * step
-                    v = vTurbNoise(t, t, t, 1.0, 1.0, octaves, False, basis, seed)
-                    x = v[0] * scale[0] * size
-                    y = v[1] * scale[1] * size
-                    z = v[2] * scale[2] * size
-                    newpoints.append([x, y, z])
-                    i += 1
-            else:
-                # noise linear
-                while i < number:
-                    t = i * step
-                    v = vTurbNoise(t, t, t, 1.0, size, octaves, False, basis, seed)
-                    x = t + v[0] * scale[0]
-                    y = v[1] * scale[1]
-                    z = v[2] * scale[2]
-                    newpoints.append([x, y, z])
-                    i += 1
-            return newpoints
-
-
-        def vertsToPoints(Verts):
-            # main vars
-            vertArray = []
-            for v in Verts:
-                vertArray += v
-            return vertArray
-
-
-        def createCurve(context, vertArray):
-            splineType = 'BEZIER'
-
-            name = 'TestCurve'
-
-            if bpy.context.mode == 'EDIT_CURVE':
-                Curve = context.active_object
-                newSpline = Curve.data.splines.new(type=splineType)          # spline
-            else:
-                # create curve
-                dataCurve = bpy.data.curves.new(name, type='CURVE')  # curve data block
-                newSpline = dataCurve.splines.new(type=splineType)          # spline
-
-                # create object with newCurve
-                Curve = object_utils.object_data_add(
-                    context, dataCurve)  # place in active scene
-
-            # set newSpline Options
-            newSpline.use_cyclic_u = False
-            newSpline.use_endpoint_u = False
-            newSpline.order_u = False
-
-            # set curve Options
-            Curve.data.dimensions = '3D'
-            Curve.data.use_path = True
-            Curve.data.fill_mode = 'FULL'
-
-            for spline in Curve.data.splines:
-                for point in spline.bezier_points:
-                    point.select_control_point = False
-                    point.select_left_handle = False
-                    point.select_right_handle = False
-
-            # create spline from vertarray
-            newSpline.bezier_points.add(int(len(vertArray) * 0.33))
-            newSpline.bezier_points.foreach_set('co', vertArray)
-            for point in newSpline.bezier_points:
-                # Setting these types to 'FREE' makes an explosion-like noise! 'AUTO' creates smooth curves.
-                point.handle_right_type = 'AUTO'
-                point.handle_left_type = 'AUTO'
-                point.select_control_point = True
-                point.select_left_handle = True
-                point.select_right_handle = True
-
-            return
-        # END Blender Addons
-
 
         # generated_on = str(datetime.datetime.now())
 
@@ -588,3 +407,182 @@ class Gen_Regions_Operator(bpy.types.Operator):
         f.close()
 
         return {'FINISHED'}
+
+# START Blender Addons
+def randnum(low=0.0, high=1.0, seed=0):
+    """
+    randnum( low=0.0, high=1.0, seed=0 )
+
+    Create random number
+    Parameters:
+        low - lower range
+            (type=float)
+        high - higher range
+            (type=float)
+        seed - the random seed number, if seed == 0, the current time will be used instead
+            (type=int)
+    Returns:
+        a random number
+            (type=float)
+    """
+
+    Noise.seed_set(seed)
+    rnum = Noise.random()
+    rnum = rnum * (high - low)
+    rnum = rnum + low
+    return rnum
+
+
+def vTurbNoise(x, y, z, iScale=0.25, Size=1.0, Depth=6, Hard=False, Basis=0, Seed=0):
+    """
+    vTurbNoise((x,y,z), iScale=0.25, Size=1.0,
+            Depth=6, Hard=0, Basis=0, Seed=0 )
+
+    Create randomised vTurbulence noise
+
+    Parameters:
+        xyz - (x,y,z) float values.
+            (type=3-float tuple)
+        iScale - noise intensity scale
+            (type=float)
+        Size - noise size
+            (type=float)
+        Depth - number of noise values added.
+            (type=int)
+        Hard - noise hardness: True - soft noise; False - hard noise
+            (type=int)
+        basis - type of noise used for turbulence
+            (type=int)
+        Seed - the random seed number, if seed == 0, the current time will be used instead
+            (type=int)
+    Returns:
+        the generated turbulence vector.
+            (type=3-float list)
+    """
+    rand = randnum(-100, 100, Seed)
+    if Basis == 9:
+        Basis = 14
+    vec = Vector((x / Size + rand, y / Size + rand, z / Size + rand))
+    vTurb = Noise.turbulence_vector(vec, Depth, Hard)
+    # mathutils.noise.turbulence_vector(position, octaves, hard, noise_basis='PERLIN_ORIGINAL', amplitude_scale=0.5, frequency_scale=2.0)
+    tx = vTurb[0] * iScale
+    ty = vTurb[1] * iScale
+    tz = vTurb[2] * iScale
+    return tx, ty, tz
+
+
+def NoiseCurve(type=2, number=14, length=8.0, size=10,
+            scale=[0.5, 0.5, 0.5], octaves=2, basis=0, seed=0):
+    """
+    Create noise curve
+
+    Parameters:
+        number - number of points
+            (type=int)
+        length - curve length
+            (type=float)
+        size - noise size
+            (type=float)
+        scale - noise intensity scale x,y,z
+            (type=list)
+        basis - noise basis
+            (type=int)
+        seed - noise random seed
+            (type=int)
+        type - noise curve type
+            (type=int)
+    Returns:
+        a list with lists of x,y,z coordinates for curve points, [[x,y,z],[x,y,z],...n]
+        (type=list)
+    """
+
+    newpoints = []
+    step = (length / number)
+    i = 0
+    if type == 1:
+        # noise circle
+        while i < number:
+            t = i * step
+            v = vTurbNoise(t, t, t, 1.0, size, octaves, False, basis, seed)
+            x = sin(t * pi) + (v[0] * scale[0])
+            y = cos(t * pi) + (v[1] * scale[1])
+            z = v[2] * scale[2]
+            newpoints.append([x, y, z])
+            i += 1
+    elif type == 2:
+        # noise knot / ball
+        while i < number:
+            t = i * step
+            v = vTurbNoise(t, t, t, 1.0, 1.0, octaves, False, basis, seed)
+            x = v[0] * scale[0] * size
+            y = v[1] * scale[1] * size
+            z = v[2] * scale[2] * size
+            newpoints.append([x, y, z])
+            i += 1
+    else:
+        # noise linear
+        while i < number:
+            t = i * step
+            v = vTurbNoise(t, t, t, 1.0, size, octaves, False, basis, seed)
+            x = t + v[0] * scale[0]
+            y = v[1] * scale[1]
+            z = v[2] * scale[2]
+            newpoints.append([x, y, z])
+            i += 1
+    return newpoints
+
+
+def vertsToPoints(Verts):
+    # main vars
+    vertArray = []
+    for v in Verts:
+        vertArray += v
+    return vertArray
+
+
+def createCurve(context, vertArray):
+    splineType = 'BEZIER'
+
+    name = 'TestCurve'
+
+    if bpy.context.mode == 'EDIT_CURVE':
+        Curve = context.active_object
+        newSpline = Curve.data.splines.new(type=splineType)          # spline
+    else:
+        # create curve
+        dataCurve = bpy.data.curves.new(name, type='CURVE')  # curve data block
+        newSpline = dataCurve.splines.new(type=splineType)          # spline
+
+        # create object with newCurve
+        Curve = object_utils.object_data_add(
+            context, dataCurve)  # place in active scene
+
+    # set newSpline Options
+    newSpline.use_cyclic_u = False
+    newSpline.use_endpoint_u = False
+    newSpline.order_u = False
+
+    # set curve Options
+    Curve.data.dimensions = '3D'
+    Curve.data.use_path = True
+    Curve.data.fill_mode = 'FULL'
+
+    for spline in Curve.data.splines:
+        for point in spline.bezier_points:
+            point.select_control_point = False
+            point.select_left_handle = False
+            point.select_right_handle = False
+
+    # create spline from vertarray
+    newSpline.bezier_points.add(int(len(vertArray) * 0.33))
+    newSpline.bezier_points.foreach_set('co', vertArray)
+    for point in newSpline.bezier_points:
+        # Setting these types to 'FREE' makes an explosion-like noise! 'AUTO' creates smooth curves.
+        point.handle_right_type = 'AUTO'
+        point.handle_left_type = 'AUTO'
+        point.select_control_point = True
+        point.select_left_handle = True
+        point.select_right_handle = True
+
+    return
+# END Blender Addons
