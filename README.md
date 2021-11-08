@@ -3,17 +3,19 @@ This is a WIP Blender addon that handles Blender animation exporting to X4 binar
 
 ANIMATION: 
 
-Most users would follow these steps:
+Most users should follow these steps:
 
-(1) create an animation in Blender; 
+(0) If adding animation(s) to a component with existing animations, please use this addon to import the animations for now: https://github.com/Cgettys/X4Converter/blob/master/X4ConverterBlenderAddon.zip (there's a checkbox for import animations).
 
-(2) select the objects whose animations you want in the generated ANI file (the objects should have the same name as the component parts you want animated); 
+(1) Create an animation in Blender.
 
-(3a) while in Layout tab click on the Generator panel/tab (press N if it's not visible, usually on the right);
+(2) Select the objects whose animations you want in the generated ANI file (the objects should have the same name as the component parts you want animated) (if step 0 applies to you, make sure you select objects with imported animations you want!).
 
-(3b) enter your desired target folder in the Generator panel; and 
+(3a) While in Layout tab, click on the Generator panel/tab (press N if it's not visible, usually on the right).
 
-(4) click the last 2 buttons in order (naturally I can combine these buttons, but it's useful having them separate right now). 
+(3b) Enter your desired target folder in the Generator panel.
+
+(4) Click the last 2 buttons in order (first AniXML, then Ani) (naturally I can combine these buttons, but it's useful having them separate right now). 
 
 The output anixml and ani files should appear in your target folder. You just need to place and rename them (typically like CLUSTER_100_DATA.ani or whatever the data folder is for the component).
 
