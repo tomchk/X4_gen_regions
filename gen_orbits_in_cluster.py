@@ -11,7 +11,8 @@ import os
 from pathlib import Path
 import xml.dom
 
-from . gen_orbits import AddOrbitAnim, GenerateAniXML
+from . blender_to_anixml import GenerateAniXML
+from . gen_orbits import AddOrbitAnim
 from . gen_regions import randnum
 
 try:
@@ -55,7 +56,7 @@ class Gen_Orbits_In_Cluster_Operator(bpy.types.Operator):
         source = mytool.source
         target = mytool.target
 
-        source = r'C:\Games\Steam\steamapps\common\X4 Foundations\extensions\planet_builder\assets\environments\cluster\Cluster_pb.xml' #TODO Just for testing
+        # source = r'C:\Games\Steam\steamapps\common\X4 Foundations\extensions\planet_builder\assets\environments\cluster\Cluster_pb.xml' #TODO Just for testing
         sourceTree = xml.dom.minidom.parse(source) #etree.parse(source)
         
         sunCoordinatesList = [dm for dm in sourceTree.getElementsByTagName('position') if 'XU Omni' in dm.parentNode.parentNode.getAttribute('name')]
@@ -84,7 +85,7 @@ class Gen_Orbits_In_Cluster_Operator(bpy.types.Operator):
                 AddOrbitAnim(obj,thisRadius,keyframes,60,0,0) #15*planetIndex,15*planetIndex+360 #TODO Make these not rely on adjustments to radius!
                 planetIndex += 1
 
-        GenerateAniXML()
+        GenerateAniXML(target)
 
         return {'FINISHED'}
 

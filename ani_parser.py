@@ -42,7 +42,7 @@ def prettify(elem):
     return reparsed.toprettyxml(indent="  ")
 
 # sourceFile = (r'D:\Games\Steam\steamapps\common\X4 Foundations\X4_extracted\extensions\ego_dlc_terran\assets\environments\cluster\CLUSTER_101_DATA.ANI')
-sourceFile = './target.ani'
+sourceFile = r'C:\Games\Steam\steamapps\common\X Rebirth\extensions\skyhook\assets\environments\cluster\cluster_new_data.ani'
 targetPath = './'
 
 aniXML = etree.Element('root')

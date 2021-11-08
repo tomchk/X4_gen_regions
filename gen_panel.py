@@ -14,14 +14,14 @@ class MyProperties(PropertyGroup):
     source: StringProperty(
         name="Source",
         description="Paste full file path here",
-        default="",
+        default="C:/Games/Steam/steamapps/common/X4 Foundations/extensions/planet_builder/assets/environments/cluster/Cluster_pb.xml",
         maxlen=1024,
         )
 
     target: StringProperty(
         name="Target",
         description="Enter target folder here",
-        default="",
+        default="D:/X4_out/X4_gen_regions/",
         maxlen=1024,
         )
 
@@ -53,3 +53,8 @@ class Gen_PT_Panel(bpy.types.Panel):
         row.operator("view3d.gen_orbits", text="Generate Orbits")
         row = layout.row()
         row.operator("view3d.gen_orbits_in_cluster", text="Animate Cluster")
+        row = layout.row()
+        row = layout.row()
+        row.operator("view3d.blender_to_anixml", text="Export to AniXML")
+        row = layout.row()
+        row.operator("view3d.gen_ani", text="AniXML to Ani")

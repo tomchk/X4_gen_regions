@@ -14,6 +14,8 @@ import bpy
 from . gen_regions import Gen_Regions_Operator
 from . gen_orbits import Gen_Orbits_Operator
 from . gen_orbits_in_cluster import Gen_Orbits_In_Cluster_Operator
+from . blender_to_anixml import Blender_To_AniXML_Operator
+from . gen_ani import Gen_Ani_Operator
 from . gen_panel import MyProperties
 from . gen_panel import Gen_PT_Panel
 
@@ -26,7 +28,7 @@ from bpy.types import (Panel,
                        )
 
 
-classes = (Gen_Regions_Operator, Gen_Orbits_Operator, Gen_Orbits_In_Cluster_Operator, MyProperties, Gen_PT_Panel)
+classes = (Gen_Regions_Operator, Gen_Orbits_Operator, Gen_Orbits_In_Cluster_Operator, Blender_To_AniXML_Operator, Gen_Ani_Operator, MyProperties, Gen_PT_Panel)
 
 def register():
     from bpy.utils import register_class
