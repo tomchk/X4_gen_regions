@@ -20,10 +20,15 @@ The output anixml and ani files should appear in your target folder. You just ne
 The other buttons are for creating randomized regions from a sectors.xml file (unrelated, just currently part of this addon) and generating orbits for things like planets. Let's get animating!
 
 
+
 REGIONS:
+
 Region generation is currently based on a sectors.xml file the user selects, and optionally based on an input file briefly listing what types of fields and resources are desired.
 
+
+
 FUTURE PLANS:
+
 Future animation plans may include more animation types than location and rotation, such as scale (assuming these will work) and possibly more automated generation of common antimations, like rotations.
 
 Future region plans may include porting over more of what I created in XSLT, such as field rings around planets, accretion discs, debris fields, etc.
