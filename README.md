@@ -7,7 +7,7 @@ Most users would follow these steps:
 
 (1) create an animation in Blender; 
 
-(2) select the objects whose animations you want in the generated ANI file (the objects should have the same name as the copmonent parts you want animated); 
+(2) select the objects whose animations you want in the generated ANI file (the objects should have the same name as the component parts you want animated); 
 
 (3a) while in Layout tab click on the Generator panel/tab (press N if it's not visible, usually on the right);
 
