@@ -33,6 +33,6 @@ Region generation is currently based on a sectors.xml file the user selects, and
 
 FUTURE PLANS:
 
-Future animation plans may include more animation types than location and rotation, such as scale (assuming these will work) and possibly more automated generation of common antimations, like rotations.
+Future animation plans may include more animation types than location and rotation, such as scale (assuming these will work) and possibly more automated generation of common animations, like rotations.
 
 Future region plans may include porting over more of what I created in XSLT, such as field rings around planets, accretion discs, debris fields, etc.
