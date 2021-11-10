@@ -42,7 +42,8 @@ def prettify(elem):
     return reparsed.toprettyxml(indent="  ")
 
 # sourceFile = (r'D:\Games\Steam\steamapps\common\X4 Foundations\X4_extracted\extensions\ego_dlc_terran\assets\environments\cluster\CLUSTER_101_DATA.ANI')
-sourceFile = r'C:\Games\Steam\steamapps\common\X Rebirth\extensions\skyhook\assets\environments\cluster\cluster_new_data.ani'
+# sourceFile = r'C:\Games\Steam\steamapps\common\X Rebirth\extensions\skyhook\assets\environments\cluster\cluster_new_data.ani'
+sourceFile = r'D:\Games\Steam\steamapps\common\X4 Foundations\X4_extracted\assets\units\size_s\SHIP_ARG_S_HEAVYFIGHTER_02_DATA.ANI'
 targetPath = './'
 
 aniXML = etree.Element('root')
@@ -82,8 +83,14 @@ with open(sourceFile, 'rb') as reader:
 
     #Cycle through each animation, processing positions, rotation, etc. keyframes of each
     for i in range(header['NumAnims']):
-        partNode = etree.SubElement(dataNode, 'part', {'name': animDesc[i]['Name']})
-        catNode = etree.SubElement(partNode, 'category', {'name': "misc"})
+        if len(dataNode.findall("./part[@name='" + animDesc[i]['Name'] + "']")) == 0: 
+            partNode = etree.SubElement(dataNode, 'part', {'name': animDesc[i]['Name']})
+        idx = animDesc[i]['Subname'].find('_')
+        if len(partNode.findall("./category")) == 0: 
+            if idx > 0:
+                catNode = etree.SubElement(partNode, 'category', {'name': animDesc[i]['Subname'][0:idx]}) # Category is a string before _ of subname, if any
+            else:
+                catNode = etree.SubElement(partNode, 'category', {'name': "misc"}) # Now we only assume misc if _ is not present or is the first character
         aniNode = etree.SubElement(catNode, 'animation', {'subname': animDesc[i]['Subname']})
 
         metaConNode = etree.SubElement(metadataNode, 'connection', {'name': animDesc[i]['Name']})
