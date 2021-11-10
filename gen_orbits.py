@@ -68,7 +68,7 @@ class Gen_Orbits_Operator(bpy.types.Operator):
 # START ORBIT ANIMATION GENERATION
 def AddOrbitAnim(obj,radius=1E7,frames=108000,numKeyframes=60,rotationCenterX=0,rotationCenterY=0,angleStart=0,angleEnd=360):
     angle = radians(angleStart)
-    omega = radians(angleEnd)/numKeyframes
+    omega = radians(angleEnd-angleStart)/numKeyframes
 
     obj.location.x = rotationCenterX + radius * cos(angle) # Starting x
     obj.location.z = rotationCenterY - radius * sin(angle) # Starting y, at least for DAEs from converter

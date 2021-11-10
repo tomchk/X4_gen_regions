@@ -15,7 +15,16 @@ Most users should follow these steps:
 
 (3b) Enter your desired target folder in the Generator panel.
 
-(4) Click the last 2 buttons in order (first AniXML, then Ani) (naturally I can combine these buttons, but it's useful having them separate right now). 
+(3c) Click the "Export to AniXML" button.
+
+(4a) If you are making a simple loop animation, like a looping rotation or orbit, you can just click the "AniXML to Ani" button. HOWEVER, for complex (e.g., SHIP) animations that are broken into different activiation steps, like dockingbay_closing and dockingbay_opening, go to 4b instead.
+
+(4b) Follow the example AniXML that Cgetty's above addon generates when it imports the ship. You will need to do the following:
+(i) Replace the name in <category name="misc"> with the part of the activation before the _, so in this example "dockingbay". 
+(ii) Separate the <animation subname="loop"> into the different activation steps, following the example mentioned. 
+(iii) SAVE and BACKUP your edited AniXML.
+(iv) THEN click the "AniXML to Ani" button.
+
 
 (5) The output anixml and ani files should appear in your target folder. You just need to place and rename them (typically like CLUSTER_100_DATA.ani or whatever the data folder is for the component).
 

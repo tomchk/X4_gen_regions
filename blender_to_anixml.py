@@ -83,18 +83,26 @@ def GenerateAniXML(targetPath):
         if len(obj.name) > 0: #TODO Change this, and adjust axes? if obj.name.startswith("part_asteroids"):
             fcurves = obj.animation_data.action.fcurves
             partNode = etree.SubElement(dataNode, 'part', {'name': obj.name})
-            catNode = etree.SubElement(partNode, 'category', {'name': "misc"})
-            aniNode = etree.SubElement(catNode, 'animation', {'subname': "loop"}) # TODO Loop is assumed for now!
-            locNode = etree.SubElement(aniNode, 'location')
-            rotEulerNode = etree.SubElement(aniNode, 'rotation_euler')
+            blenderSubName = obj.animation_data.action.name
+            if blenderSubName.startswith(('playonce','cutscene','gamestart','mode','repeat','signal','doors','cockpit','flaps','gun','turret','weapon','scaling','landing','docking','loop_random','deactivated','activating','active','deactivating','lock','unlock','chair','switch','tlop','flip','flop','wave','scra','tran_','anim_stand','anim_sit','anim_tool','anim_locker','anim_1h','anim_2h','anim_marshal')):
+                subName = obj.animation_data.action.name
+            else:
+                subName = 'loop'
+            idx = subName.find('_')
+            if idx > 0:
+                catNode = etree.SubElement(partNode, 'category', {'name': subName[0:idx]}) # Category is a string before _ of subname, if any
+            else:
+                catNode = etree.SubElement(partNode, 'category', {'name': "misc"}) # Now we only assume misc if _ is not present or is the first character
+            aniNode = etree.SubElement(catNode, 'animation', {'subname': subName})
             conNode = etree.SubElement(metadataNode, 'connection', {'name': obj.name})
-            aniMetaNode = etree.SubElement(conNode, 'animation', {'subname': "loop"}) # TODO Loop is assumed for now!
+            aniMetaNode = etree.SubElement(conNode, 'animation', {'subname': subName})
             frame_start, frame_end = map(int, obj.animation_data.action.frame_range)
             etree.SubElement(aniMetaNode, 'frames', {'start': str(frame_start), 'end': str(frame_end)})
             
             # Loop through all fcurves of the object animation
             for xyz in range(len(fcurves)):
                 if fcurves[xyz].data_path == 'location':
+                    if len(aniNode.findall("./location")) == 0: locNode = etree.SubElement(aniNode, 'location')
                     if xyz == 0:
                         X = etree.SubElement(locNode, 'X')
                         keyFrameOutput(xyz,X,fcurves)
@@ -105,6 +113,7 @@ def GenerateAniXML(targetPath):
                         Z = etree.SubElement(locNode, 'Z')
                         keyFrameOutput(xyz,Z,fcurves)
                 if fcurves[xyz].data_path == 'rotation_euler':
+                    if len(aniNode.findall("./rotation_euler")) == 0: rotEulerNode = etree.SubElement(aniNode, 'rotation_euler')
                     if xyz == 0:
                         X = etree.SubElement(rotEulerNode, 'X')
                         keyFrameOutput(xyz,X,fcurves)
@@ -114,21 +123,31 @@ def GenerateAniXML(targetPath):
                     if xyz == 2:
                         Z = etree.SubElement(rotEulerNode, 'Z')
                         keyFrameOutput(xyz,Z,fcurves)
-                if fcurves[xyz].data_path != 'location' and fcurves[xyz].data_path != 'rotation_euler': # TODO Handle better; Not finished!
-                    otherDataPathNode = etree.SubElement(aniNode, fcurves[xyz].data_path)
+                if fcurves[xyz].data_path == 'scale':
+                    if len(aniNode.findall("./scale")) == 0: scaleNode = etree.SubElement(aniNode, 'scale')
                     if xyz == 0:
-                        X = etree.SubElement(otherDataPathNode, 'X')
+                        X = etree.SubElement(scaleNode, 'X')
                         keyFrameOutput(xyz,X,fcurves)
                     if xyz == 1:
-                        Y = etree.SubElement(otherDataPathNode, 'Y')
+                        Y = etree.SubElement(scaleNode, 'Y')
                         keyFrameOutput(xyz,Y,fcurves)
                     if xyz == 2:
-                        Z = etree.SubElement(otherDataPathNode, 'Z')
+                        Z = etree.SubElement(scaleNode, 'Z')
                         keyFrameOutput(xyz,Z,fcurves)
+                # else:
+                #     if len(aniNode.findall("./" + fcurves[xyz].data_path)) == 0: otherDataPathNode = etree.SubElement(aniNode, fcurves[xyz].data_path)
+                #     if xyz == 0:
+                #         X = etree.SubElement(otherDataPathNode, 'X')
+                #         keyFrameOutput(xyz,X,fcurves)
+                #     if xyz == 1:
+                #         Y = etree.SubElement(otherDataPathNode, 'Y')
+                #         keyFrameOutput(xyz,Y,fcurves)
+                #     if xyz == 2:
+                #         Z = etree.SubElement(otherDataPathNode, 'Z')
+                #         keyFrameOutput(xyz,Z,fcurves)
 
-                #print("%s[%i]" % (fcurves[xyz].data_path, fcurves[xyz].array_index)) # data_path is location, rotation_euler, etc.; array_index is x=0, y=1, z=2
+                print("%s[%i]" % (fcurves[xyz].data_path, fcurves[xyz].array_index)) # data_path is location, rotation_euler, etc.; array_index is x=0, y=1, z=2
 
-    # targetPath = r'D:/X4_out/X4_gen_regions/' # TODO Testing ONLY
     aniXMLFile = (targetPath + 'output.anixml')
     os.makedirs(os.path.dirname(aniXMLFile), exist_ok=True)
     with open(aniXMLFile, "w") as f:

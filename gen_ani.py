@@ -39,24 +39,28 @@ def AniXMLtoAni(targetPath):
 
     numPosKeys = []
     numRotKeys = []
+    numScaleKeys = []
     duration = []
 
     InterpolationTypeNameDict = {b'\x00\x00\x00\x00':"UNKNOWN", b'\x01\x00\x00\x00':"STEP", b'\x02\x00\x00\x00':"LINEAR", b'\x03\x00\x00\x00':"QUADRATIC", b'\x04\x00\x00\x00':"CUBIC", b'\x05\x00\x00\x00':"BEZIER", b'\x06\x00\x00\x00':"BEZIER_LINEARTIME", b'\x07\x00\x00\x00':"TCB"}
 
     with open(aniFile, 'wb') as writer:
-        writer.write(pack('IIII', numAnims, 16+numAnims*160, 1, 0)) # Write header
+        writer.write(pack('IIII', numAnims, 16+numAnims*160, 1, 0)) # Write 16-byte header:'NumAnims','KeyOffsetBytes'(16 + NumAnims*160),'Version','Padding'
+        
+        # Cycle through each animation, writing AnimDesc of each
         for i in range(numAnims):
             partName = aniXML.findall("./data/part")[i].attrib['name']
             subName = aniXML.find("./data/part[@name='" + partName + "']/category/animation").attrib['subname']
             numPosKeys.append(len(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/location/X/frame")))
             numRotKeys.append(len(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/rotation_euler/X/frame")))
+            numScaleKeys.append(len(aniXML.findall("./data/part[@name='" + partName + "']/category/animation/scale/X/frame")))
             duration.append(int((int(aniXML.find("./metadata/connection[@name='" + partName + "']/animation/frames").attrib['end']) - int(aniXML.find("./metadata/connection[@name='" + partName + "']/animation/frames").attrib['start']))/30))
-            writer.write(pack('64s64sIIIIIfII', # Write AnimDesc
+            writer.write(pack('64s64sIIIIIfII', # Write AnimDesc:'Name','Subname','NumPosKeys','NumRotKeys','NumScaleKeys','NumPreScaleKeys','NumPostScaleKeys','Duration'
                 partName.encode(),
                 subName.encode(),
                 numPosKeys[i],
                 numRotKeys[i],
-                0,
+                numScaleKeys[i],
                 0,
                 0,
                 int(duration[i]),
@@ -64,7 +68,7 @@ def AniXMLtoAni(targetPath):
                 0
             ))
 
-        # #Cycle through each animation, processing positions, rotation, etc. keyframes of each
+        # Cycle through each animation, processing positions, rotation, etc. keyframes of each
         for i in range(numAnims):
             partName = aniXML.findall("./data/part")[i].attrib['name']
             for iia in range(numPosKeys[i]):
