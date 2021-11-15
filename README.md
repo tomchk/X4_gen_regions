@@ -17,7 +17,7 @@ Most users should follow these steps:
 
 (3c) Click the "Export to AniXML" button.
 
-(4a) If you are making a simple loop animation, like a looping rotation or orbit, you can just click the "AniXML to Ani" button. HOWEVER, for complex (e.g., SHIP) animations that are broken into different activiation steps, like dockingbay_closing and dockingbay_opening, go to 4b instead.
+(4a) If you are making a simple loop animation, like a looping rotation or orbit, just click the "AniXML to Ani" button and proceed to step 5. HOWEVER, for complex (e.g., SHIP) animations that are broken into different activiation steps, like dockingbay_closing and dockingbay_opening, go to 4b instead.
 
 (4b) Follow the example AniXML that Cgetty's above addon generates when it imports the ship. You will need to do the following:
 (i) Replace the name in ```<category name="misc">``` with the part of the activation before the _, so in this example "dockingbay". 
