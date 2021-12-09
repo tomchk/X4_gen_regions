@@ -91,7 +91,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
         if noGenRegionsInput: # See sample input below
             genRITree = etree.XML('''
 <gen_regions_input>
-    <sample_cluster_macro noregion="true" randomize="false" sizefactor="2">
+    <sample_sector_macro noregion="true" randomize="false" sizefactor="2">
         <fields>
             <volumetricfog></volumetricfog>
             <asteroid_ore_xxl></asteroid_ore_xxl>
@@ -102,7 +102,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
             <ore>high</ore>
             <hydrogen>high</hydrogen>
         </resources>
-    </sample_cluster_macro>
+    </sample_sector_macro>
 </gen_regions_input>
 ''')
         else:
@@ -144,7 +144,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 # Factor for multiplying cylinder radius or making splinetube cover more space
                 regionSizeFactor = 1
                 if len(genRITree.findall('.//' + thisMacroName + '[@sizefactor]')) > 0: # Will proceed only if the tag includes this attribute
-                    regionSizeFactor = genRITree.find('.//' + thisMacroName + '[@sizefactor]').text
+                    regionSizeFactor = int(genRITree.find('.//' + thisMacroName + '[@sizefactor]').attrib['sizefactor'])
 
                 # Basically, every third item in the for-loop will NOT use a cylinder
                 if i % 3 != 0: # Cylinder
