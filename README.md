@@ -36,7 +36,15 @@ The other buttons are for creating randomized regions from a sectors.xml file (u
 
 REGIONS:
 
-Region generation is currently based on a sectors.xml file the user selects, and optionally based on an input file briefly listing what types of fields and resources are desired.
+Region generation is currently based on a sectors.xml file the user selects, and optionally based on an input file gen_regions_input.xml in the extension root folder, which briefly lists sector macros you want to customize (e.g., no region, non-random region, size of region, and types of fields and resources).
+
+Steps:
+(0) OPTIONAL: Provide your gen_regions_input.xml in the extension root folder, based on the sample in gen_regions.py.
+(1) Select any mesh in Blender.
+(2) While in Layout tab, click on the Generator panel/tab (press N if it's not visible, usually on the right).
+(3a) Enter your desired sectors.xml file in the Generator panel.
+(3b) Enter your desired target folder in the Generator panel.
+(4) Click "Generate Regions" button.
 
 
 
