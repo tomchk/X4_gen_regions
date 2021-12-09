@@ -91,7 +91,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
         if noGenRegionsInput: # See sample input below
             genRITree = etree.XML('''
 <gen_regions_input>
-    <sample_cluster_macro noregion="true" randomize="false">
+    <sample_cluster_macro noregion="true" randomize="false" sizefactor="2">
         <fields>
             <volumetricfog></volumetricfog>
             <asteroid_ore_xxl></asteroid_ore_xxl>
@@ -127,7 +127,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
         for thisMacro in sourceTree.findall("./macro[@class='sector']"):
             thisMacroName = thisMacro.attrib['name']
             randomizeThisRegion = len(genRITree.findall('.//' + thisMacroName + '[@randomize="false"]')) == 0 # Will be false only if the tag includes this attribute as false; default is to randomize
-            if len(genRITree.findall('.//' + thisMacroName + '[@noregion="true"]')) == 0:
+            if len(genRITree.findall('.//' + thisMacroName + '[@noregion="true"]')) == 0: # Add region node for this sector ONLY IF custom input file genRITree does NOT say noregion="true" for this sector
                 region = etree.SubElement(
                     regionDefXML, 'region',
                     {
@@ -141,20 +141,25 @@ class Gen_Regions_Operator(bpy.types.Operator):
                     }
                 )
 
+                # Factor for multiplying cylinder radius or making splinetube cover more space
+                regionSizeFactor = 1
+                if len(genRITree.findall('.//' + thisMacroName + '[@sizefactor]')) > 0: # Will proceed only if the tag includes this attribute
+                    regionSizeFactor = genRITree.find('.//' + thisMacroName + '[@sizefactor]').text
+
                 # Basically, every third item in the for-loop will NOT use a cylinder
-                if i % 3 != 0:
+                if i % 3 != 0: # Cylinder
                     boundary = etree.SubElement(region, 'boundary', {'class': "cylinder"})
                     boundarySize = etree.SubElement(
-                        boundary, 'size', {'r': str(round(randnum(35000,55000,i),0)), 'linear': str(round(randnum(8000,15000,i),0))})
+                        boundary, 'size', {'r': str(round(regionSizeFactor*randnum(35000,55000,i),0)), 'linear': str(round(randnum(8000,15000,i),0))})
 
-                else:
+                else: # Splinetube
                     boundary = etree.SubElement(region, 'boundary', {'class': "splinetube"})
                     boundarySize = etree.SubElement(boundary, 'size', {'r': str(round(randnum(12000,22000,i),0))})
 
                     # START Using Blender Addons
                     context = bpy.context
                     verts = NoiseCurve(2, randnum(2, 7, i), randnum(
-                        3, 8, i), 1000000, [1, 1, 1], 1, 0, i)
+                        3, 8, i), regionSizeFactor*1000000, [1, 1, 1], 1, 0, i)
 
                     # turn verts into array
                     vertArray = vertsToPoints(verts)
@@ -187,9 +192,9 @@ class Gen_Regions_Operator(bpy.types.Operator):
 
                         finalSpline = etree.SubElement(boundary, 'splineposition', {'x': str(fieldvalues[0]), 'y': str(fieldvalues[1]), 'z': str(fieldvalues[2]), 'tx': str(
                             (normalizedTangs[0])), 'ty': str((normalizedTangs[1])), 'tz': str((normalizedTangs[2])), 'inlength': str(tangin), 'outlength': str(tangout)})
-                    # END Using Egosoft Spline Exporter
+                    # END Using Spline Exporter
 
-
+                # Applies to Cylinder OR Splinetube
                 falloff = etree.SubElement(region, 'falloff')
                 lateralFalloff = etree.SubElement(falloff, 'lateral')
                 etree.SubElement(lateralFalloff, 'step', {'position': "0.0", 'value': "0.0"})
@@ -209,6 +214,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
 
                 fields = etree.SubElement(region, 'fields')
                 
+                # List of desired fog mediums from collector edition
                 fogMediumList = [
                     'fog_asteroidbelt',
                     'fog_asteroidbelt2',
@@ -247,6 +253,8 @@ class Gen_Regions_Operator(bpy.types.Operator):
                     'helium',
                     'hydrogen'
                 ]
+
+                # List of desired fog textures from collector edition
                 fogTextureList = [
                     'assets/textures/environments/fog_maskrnd_03',
                     'assets/textures/environments/fog_maskrnd_06_gui',
@@ -269,6 +277,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 # for element in fogTextureTree.findall(".//texture"): 
                 #     fogTextureList.append(element.text)
 
+                # Each of these adds its node only if the custom input file genRITree (A) did not say randomize="false" OR (B) doesn't exist OR (C) includes this sector and this field (NOTE: A is by default the opposite, so a random region will normally be made)
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/volumetricfog')) > 0: etree.SubElement(fields, 'volumetricfog', {
                     'multiplier': str(round(randnum(0.05,0.2,i),4)), 
                     'medium': fogMediumList[int(randnum(0,len(fogMediumList),i))],
