@@ -91,16 +91,20 @@ class Gen_Regions_Operator(bpy.types.Operator):
         if noGenRegionsInput: # See sample input below
             genRITree = etree.XML('''
 <gen_regions_input>
-    <sample_sector_macro noregion="true" randomize="false" sizefactor="2">
+    <sample_sector_macro noregion="false" randomize="false" sizefactor="2" class="sphere">
         <fields>
             <volumetricfog></volumetricfog>
             <asteroid_ore_xxl></asteroid_ore_xxl>
             <asteroid_ore_xl></asteroid_ore_xl>
+            <asteroid_ice_xs></asteroid_ice_xs>
+            <asteroid_silicon_xs></asteroid_silicon_xs>
+            <asteroid_nividium_xs></asteroid_nividium_xs>
             <fogpattern_v2_macro></fogpattern_v2_macro>
         </fields>
         <resources>
             <ore>high</ore>
             <hydrogen>high</hydrogen>
+            <ice>low</ice>
         </resources>
     </sample_sector_macro>
 </gen_regions_input>
@@ -141,71 +145,87 @@ class Gen_Regions_Operator(bpy.types.Operator):
                     }
                 )
 
-                # Factor for multiplying cylinder radius or making splinetube cover more space
+                # OPTIONAL Factor for multiplying radius or making splinetube cover more space
                 regionSizeFactor = 1
                 if len(genRITree.findall('.//' + thisMacroName + '[@sizefactor]')) > 0: # Will proceed only if the tag includes this attribute
-                    regionSizeFactor = int(genRITree.find('.//' + thisMacroName + '[@sizefactor]').attrib['sizefactor'])
+                    regionSizeFactor = float(genRITree.find('.//' + thisMacroName + '[@sizefactor]').attrib['sizefactor'])
 
-                # Basically, every third item in the for-loop will NOT use a cylinder
-                if i % 3 != 0: # Cylinder
+                # OPTIONAL String for specifying region shape (boundary class)
+                regionBoundaryClass = ""
+                if len(genRITree.findall('.//' + thisMacroName + '[@class]')) > 0: # Will proceed only if the tag includes this attribute
+                    regionBoundaryClass = genRITree.find('.//' + thisMacroName + '[@class]').attrib['class']
+
+                # Check if boundary class is specified, otherwise every third item in the for-loop will use a splinetube
+                if regionBoundaryClass == "sphere": # Sphere
+                    boundary = etree.SubElement(region, 'boundary', {'class': "sphere"})
+                    boundarySize = etree.SubElement(
+                        boundary, 'size', {'r': str(round(regionSizeFactor*randnum(35000,55000,i),0))})
+                    
+                elif regionBoundaryClass == "cylinder": # Cylinder
                     boundary = etree.SubElement(region, 'boundary', {'class': "cylinder"})
                     boundarySize = etree.SubElement(
                         boundary, 'size', {'r': str(round(regionSizeFactor*randnum(35000,55000,i),0)), 'linear': str(round(randnum(8000,15000,i),0))})
 
-                else: # Splinetube
-                    boundary = etree.SubElement(region, 'boundary', {'class': "splinetube"})
-                    boundarySize = etree.SubElement(boundary, 'size', {'r': str(round(randnum(12000,22000,i),0))})
+                else:
+                    if regionBoundaryClass == "splinetube" or i % 3 == 0: # Splinetube
+                        boundary = etree.SubElement(region, 'boundary', {'class': "splinetube"})
+                        boundarySize = etree.SubElement(boundary, 'size', {'r': str(round(randnum(12000,22000,i),0))})
 
-                    # START Using Blender Addons
-                    context = bpy.context
-                    verts = NoiseCurve(2, randnum(2, 7, i), randnum(
-                        3, 8, i), regionSizeFactor*1000000, [1, 1, 1], 1, 0, i)
+                        # START Using Blender Addons
+                        context = bpy.context
+                        verts = NoiseCurve(2, randnum(2, 7, i), randnum(
+                            3, 8, i), regionSizeFactor*1000000, [1, 1, 1], 1, 0, i)
 
-                    # turn verts into array
-                    vertArray = vertsToPoints(verts)
-                    # vertArray = [0,0,0,1,0,0,2,0,0]
+                        # turn verts into array
+                        vertArray = vertsToPoints(verts)
+                        # vertArray = [0,0,0,1,0,0,2,0,0]
 
-                    # create object
-                    createCurve(context, vertArray)
-                    # END Using Blender Addons
+                        # create object
+                        createCurve(context, vertArray)
+                        # END Using Blender Addons
 
 
-                    # START Using Spline Exporter
-                    global uscale
-                    uscale = bpy.context.scene.unit_settings.scale_length
-                    obj = bpy.context.active_object
-                    points = obj.data.splines[0].bezier_points
-                    pointcount = len(points)
+                        # START Using Spline Exporter
+                        global uscale
+                        uscale = bpy.context.scene.unit_settings.scale_length
+                        obj = bpy.context.active_object
+                        points = obj.data.splines[0].bezier_points
+                        pointcount = len(points)
 
-                    for ii in range(0, pointcount):
-                        keyvalues = [0, ii+1]
-                        tang = (points[ii].handle_right - points[ii].co)
-                        tangin = (points[ii].handle_left - points[ii].co).length
-                        tangout = (points[ii].handle_right - points[ii].co).length
-                        attraction = 1.0
-                        if ii == 0 or ii == pointcount-1:
-                            attraction = 0.0
-                        fieldvalues = [points[ii].co.x*uscale, points[ii].co.z*uscale,
-                                    points[ii].co.y*uscale, tang.x, tang.z, tang.y, attraction, tangin, tangout]
-                        preNormalizedTangs = Vector((tang.x, tang.z, tang.y))
-                        normalizedTangs = preNormalizedTangs.normalized()
+                        for ii in range(0, pointcount):
+                            keyvalues = [0, ii+1]
+                            tang = (points[ii].handle_right - points[ii].co)
+                            tangin = (points[ii].handle_left - points[ii].co).length
+                            tangout = (points[ii].handle_right - points[ii].co).length
+                            attraction = 1.0
+                            if ii == 0 or ii == pointcount-1:
+                                attraction = 0.0
+                            fieldvalues = [points[ii].co.x*uscale, points[ii].co.z*uscale,
+                                        points[ii].co.y*uscale, tang.x, tang.z, tang.y, attraction, tangin, tangout]
+                            preNormalizedTangs = Vector((tang.x, tang.z, tang.y))
+                            normalizedTangs = preNormalizedTangs.normalized()
 
-                        finalSpline = etree.SubElement(boundary, 'splineposition', {'x': str(fieldvalues[0]), 'y': str(fieldvalues[1]), 'z': str(fieldvalues[2]), 'tx': str(
-                            (normalizedTangs[0])), 'ty': str((normalizedTangs[1])), 'tz': str((normalizedTangs[2])), 'inlength': str(tangin), 'outlength': str(tangout)})
-                    # END Using Spline Exporter
+                            finalSpline = etree.SubElement(boundary, 'splineposition', {'x': str(fieldvalues[0]), 'y': str(fieldvalues[1]), 'z': str(fieldvalues[2]), 'tx': str(
+                                (normalizedTangs[0])), 'ty': str((normalizedTangs[1])), 'tz': str((normalizedTangs[2])), 'inlength': str(tangin), 'outlength': str(tangout)})
+                        # END Using Spline Exporter
+                    else:
+                        boundary = etree.SubElement(region, 'boundary', {'class': "cylinder"})
+                        boundarySize = etree.SubElement(
+                            boundary, 'size', {'r': str(round(regionSizeFactor*randnum(35000,55000,i),0)), 'linear': str(round(randnum(8000,15000,i),0))})
 
-                # Applies to Cylinder OR Splinetube
+                # Applies to all region shapes/boundary classes
                 falloff = etree.SubElement(region, 'falloff')
-                lateralFalloff = etree.SubElement(falloff, 'lateral')
-                etree.SubElement(lateralFalloff, 'step', {'position': "0.0", 'value': "0.0"})
-                etree.SubElement(lateralFalloff, 'step', {'position': "0.05", 'value': "0.1"})
-                etree.SubElement(lateralFalloff, 'step', {'position': "0.1", 'value': "0.3"})
-                etree.SubElement(lateralFalloff, 'step', {'position': "0.2", 'value': "0.5"})
-                etree.SubElement(lateralFalloff, 'step', {'position': "0.5", 'value': "1"})
-                etree.SubElement(lateralFalloff, 'step', {'position': "0.8", 'value': "0.5"})
-                etree.SubElement(lateralFalloff, 'step', {'position': "0.9", 'value': "0.3"})
-                etree.SubElement(lateralFalloff, 'step', {'position': "0.95", 'value': "0.1"})
-                etree.SubElement(lateralFalloff, 'step', {'position': "1.0", 'value': "0.0"})
+                if regionBoundaryClass != "sphere": # Sphere is the only boundary class without lateral falloff
+                    lateralFalloff = etree.SubElement(falloff, 'lateral')
+                    etree.SubElement(lateralFalloff, 'step', {'position': "0.0", 'value': "0.0"})
+                    etree.SubElement(lateralFalloff, 'step', {'position': "0.05", 'value': "0.1"})
+                    etree.SubElement(lateralFalloff, 'step', {'position': "0.1", 'value': "0.3"})
+                    etree.SubElement(lateralFalloff, 'step', {'position': "0.2", 'value': "0.5"})
+                    etree.SubElement(lateralFalloff, 'step', {'position': "0.5", 'value': "1"})
+                    etree.SubElement(lateralFalloff, 'step', {'position': "0.8", 'value': "0.5"})
+                    etree.SubElement(lateralFalloff, 'step', {'position': "0.9", 'value': "0.3"})
+                    etree.SubElement(lateralFalloff, 'step', {'position': "0.95", 'value': "0.1"})
+                    etree.SubElement(lateralFalloff, 'step', {'position': "1.0", 'value': "0.0"})
                 radialFalloff = etree.SubElement(falloff, 'radial')
                 etree.SubElement(radialFalloff, 'step', {'position': "0.0", 'value': "1.0"})
                 etree.SubElement(radialFalloff, 'step', {'position': "0.51", 'value': "1.0"})
@@ -277,7 +297,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 # for element in fogTextureTree.findall(".//texture"): 
                 #     fogTextureList.append(element.text)
 
-                # Each of these adds its node only if the custom input file genRITree (A) did not say randomize="false" OR (B) doesn't exist OR (C) includes this sector and this field (NOTE: A is by default the opposite, so a random region will normally be made)
+                # Each of these adds its node only if the custom input file genRITree (A) did NOT say randomize="false" OR (B) doesn't exist OR (C) includes this sector and this field (NOTE: A is by default the opposite, so a random region will normally be made)
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/volumetricfog')) > 0: etree.SubElement(fields, 'volumetricfog', {
                     'multiplier': str(round(randnum(0.05,0.2,i),4)), 
                     'medium': fogMediumList[int(randnum(0,len(fogMediumList),i))],
@@ -336,6 +356,31 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'seed': thisSeedStr,
                         'minnoisevalue': str(round(randnum(0.0,0.4,i + 6),4)),
                         'maxnoisevalue': str(round(randnum(0.05,0.09,i + 6),4))})
+                if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_xl')) > 0: etree.SubElement(fields, 'asteroid', {'groupref': "asteroid_silicon_xl",
+                        'lodrule': "asteroidxl",
+                        'densityfactor': str(round(factorDensity*randnum(0.0005,0.0015,i + 2),4)),
+                        'rotation': "0",
+                        'rotationvariation': "4",
+                        'noisescale': "15000",
+                        'seed': thisSeedStr,
+                        'minnoisevalue': str(round(randnum(0.7,0.75,i + 2),4)),
+                        'maxnoisevalue': str(round(randnum(0.85,0.89,i + 2),4))})
+                if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_l')) > 0: etree.SubElement(fields, 'asteroid', {'groupref': "asteroid_silicon_l",
+                        'densityfactor': str(round(factorDensity*randnum(0.5,1.5,i + 3),2)),
+                        'rotation': "0",
+                        'rotationvariation': "4",
+                        'noisescale': "15000",
+                        'seed': thisSeedStr,
+                        'minnoisevalue': str(round(randnum(0.5,0.55,i + 3),4)),
+                        'maxnoisevalue': str(round(randnum(0.65,0.69,i + 3),4))})
+                if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_m')) > 0: etree.SubElement(fields, 'asteroid', {'groupref': "asteroid_silicon_m",
+                        'densityfactor': str(round(factorDensity*randnum(1.5,2.5,i + 4),2)),
+                        'rotation': "0",
+                        'rotationvariation': "8",
+                        'noisescale': "15000",
+                        'seed': thisSeedStr,
+                        'minnoisevalue': str(round(randnum(0.3,0.35,i + 4),4)),
+                        'maxnoisevalue': str(round(randnum(0.45,0.49,i + 4),4))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_s')) > 0: etree.SubElement(fields, 'asteroid', {'groupref': "asteroid_silicon_s",
                         'densityfactor': str(round(factorDensity*randnum(1.5,2.5,i + 7),2)),
                         'rotation': "0",
@@ -352,6 +397,39 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'seed': thisSeedStr,
                         'minnoisevalue': str(round(randnum(0.0,0.4,i + 6),4)),
                         'maxnoisevalue': str(round(randnum(0.05,0.09,i + 6),4))})
+                if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_xl')) > 0: etree.SubElement(fields, 'asteroid', {'groupref': "asteroid_ice_xl",
+                        'lodrule': "asteroidxl",
+                        'densityfactor': str(round(factorDensity*randnum(0.0005,0.0015,i + 2),4)),
+                        'rotation': "0",
+                        'rotationvariation': "4",
+                        'noisescale': "15000",
+                        'seed': thisSeedStr,
+                        'minnoisevalue': str(round(randnum(0.7,0.75,i + 2),4)),
+                        'maxnoisevalue': str(round(randnum(0.85,0.89,i + 2),4))})
+                if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_l')) > 0: etree.SubElement(fields, 'asteroid', {'groupref': "asteroid_ice_l",
+                        'densityfactor': str(round(factorDensity*randnum(0.5,1.5,i + 3),2)),
+                        'rotation': "0",
+                        'rotationvariation': "4",
+                        'noisescale': "15000",
+                        'seed': thisSeedStr,
+                        'minnoisevalue': str(round(randnum(0.5,0.55,i + 3),4)),
+                        'maxnoisevalue': str(round(randnum(0.65,0.69,i + 3),4))})
+                if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_m')) > 0: etree.SubElement(fields, 'asteroid', {'groupref': "asteroid_ice_m",
+                        'densityfactor': str(round(factorDensity*randnum(1.5,2.5,i + 4),2)),
+                        'rotation': "0",
+                        'rotationvariation': "8",
+                        'noisescale': "15000",
+                        'seed': thisSeedStr,
+                        'minnoisevalue': str(round(randnum(0.3,0.35,i + 4),4)),
+                        'maxnoisevalue': str(round(randnum(0.45,0.49,i + 4),4))})
+                if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_s')) > 0: etree.SubElement(fields, 'asteroid', {'groupref': "asteroid_ice_s",
+                        'densityfactor': str(round(factorDensity*randnum(1.5,2.5,i + 5),2)),
+                        'rotation': "0",
+                        'rotationvariation': "16",
+                        'noisescale': "1500",
+                        'seed': thisSeedStr,
+                        'minnoisevalue': str(round(randnum(0.1,0.15,i + 5),4)),
+                        'maxnoisevalue': str(round(randnum(0.25,0.29,i + 5),4))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_xs')) > 0: etree.SubElement(fields, 'asteroid', {'groupref': "asteroid_ice_xs",
                         'densityfactor': str(round(factorDensity*randnum(0.6,1.0,i + 9),2)),
                         'rotation': "0",
