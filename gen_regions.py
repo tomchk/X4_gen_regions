@@ -470,25 +470,39 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'seed': thisSeedStr,
                         'minnoisevalue': str(round(randnum(0.1,0.15,i + 7),4)),
                         'maxnoisevalue': str(round(randnum(0.25,0.29,i + 7),4))})
-                if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/fogpattern_v2_macro')) > 0: etree.SubElement(fields, 'nebula', {'ref': "fogpattern_v2_macro",
-                        'localred': "16",
-                        'localgreen': "19",
-                        'localblue': "22",
-                        'localdensity': "0.0",
-                        'uniformred': "10",
-                        'uniformgreen': "14",
-                        'uniformblue': "20",
-                        'uniformdensity': "0.3",
-                        'backgroundfog': "false",
-                        'resources': "hydrogen"})
                 resources = etree.SubElement(region, 'resources')
                 resourceTypes = ['ore','silicon','ice','nividium','hydrogen','helium','methane'] # TODO add new when ready
+                gasTypes = ['hydrogen','helium','methane']
                 for thisRType in resourceTypes:
+                    # Adds resource node only if the custom input file genRITree (A) did NOT say randomize="false" OR (B) doesn't exist OR (C) includes this sector and this field (NOTE: A is by default the opposite, so a random region will normally be made)
                     if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/resources/' + thisRType)) > 0: 
                         thisResource = etree.SubElement(resources, 'resource', {'ware':thisRType})
+                        # Uses the specified resource level in the custom input file genRITree IF ANY; otherwise sets to low
                         if len(genRITree.findall('.//' + thisMacroName + '/resources/' + thisRType)) > 0: thisResource.attrib['yield'] = genRITree.find('.//' + thisMacroName + '/resources/' + thisRType).text
                         else: thisResource.attrib['yield'] = 'low'
-                
+                # Adds nebula node only if the custom input file genRITree (A) did NOT say randomize="false" OR (B) doesn't exist OR (C) includes this sector and this field (NOTE: A is by default the opposite, so a random region will normally be made)
+                if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/fogpattern_v2_macro')) > 0:
+                    nebula = etree.SubElement(fields, 'nebula', {'ref': "fogpattern_v2_macro",
+                        'localred': str(round(randnum(50,200,i + 8),0)),
+                        'localgreen': str(round(randnum(50,200,i + 9),0)),
+                        'localblue': str(round(randnum(50,200,i + 10),0)),
+                        'localdensity': str(round(randnum(0,1,i),4)),
+                        'uniformred': str(round(randnum(50,200,i + 8)/5,0)),
+                        'uniformgreen': str(round(randnum(50,200,i + 9)/5,0)),
+                        'uniformblue': str(round(randnum(50,200,i + 10)/5,0)),
+                        'uniformdensity': str(round(randnum(0,2,i),4)),
+                        'backgroundfog': "false"})
+                # If nebula has been set, then add any set gas resources to it
+                if len(nebula.findall('.//ref')) > 0:
+                    thisGasList = ""
+                    # Loop through the 3 gas types above
+                    for thisGasType in gasTypes:
+                        # If this gas type is in the resources, add it as space separated value to variable
+                        if len(resources.findall('.//' + thisGasType)) > 0:
+                            thisGasList.append(thisGasType + " ")
+                    # Now add resources attribute to nebula using that variable
+                    nebula.set('resources', thisGasList.rstrip())
+
                 i += 1
 
         regionDefFile = (targetPath + 'libraries/region_definitions.xml')
