@@ -140,7 +140,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'rotation': "0",
                         'noisescale': "10000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': "0",
+                        'minnoisevalue': str(round(randnum(0.1,0.2,thisSeed),2)),
                         'maxnoisevalue': "1"
                     }
                 )
