@@ -70,6 +70,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
         mytool = context.scene.my_tool
         source = mytool.source
         target = mytool.target
+        seed = int(mytool.seed)
         
 
         def prettify(elem):
@@ -89,8 +90,8 @@ class Gen_Regions_Operator(bpy.types.Operator):
         genRIPath = Path(source).parent / "../../gen_regions_input.xml"
         noGenRegionsInput = not(genRIPath.is_file())
         if noGenRegionsInput: # See sample input below
-            genRITree = etree.XML('''
-<gen_regions_input>
+            genRITree = etree.XML(
+'''<gen_regions_input>
     <sample_sector_macro noregion="false" randomize="false" sizefactor="2" class="sphere">
         <fields>
             <volumetricfog></volumetricfog>
@@ -107,12 +108,11 @@ class Gen_Regions_Operator(bpy.types.Operator):
             <ice>low</ice>
         </resources>
     </sample_sector_macro>
-</gen_regions_input>
-''')
+</gen_regions_input>''')
         else:
             genRITree = etree.parse(genRIPath)
         
-        thisSeed = 4231
+        thisSeed = seed
         thisSeedStr = str(thisSeed)
         factorDensity = 1.0 #1.3
 
@@ -128,7 +128,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
 
         i = 0
         #for thisMacro in sourceTree.findall("./macro[@class='cluster']"): 
-        for thisMacro in sourceTree.findall("./macro[@class='sector']"):
+        for thisMacro in sourceTree.findall(".//macro[@class='sector']"):
             thisMacroName = thisMacro.attrib['name']
             randomizeThisRegion = len(genRITree.findall('.//' + thisMacroName + '[@randomize="false"]')) == 0 # Will be false only if the tag includes this attribute as false; default is to randomize
             if len(genRITree.findall('.//' + thisMacroName + '[@noregion="true"]')) == 0: # Add region node for this sector ONLY IF custom input file genRITree does NOT say noregion="true" for this sector
@@ -159,17 +159,17 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 if regionBoundaryClass == "sphere": # Sphere
                     boundary = etree.SubElement(region, 'boundary', {'class': "sphere"})
                     boundarySize = etree.SubElement(
-                        boundary, 'size', {'r': str(round(regionSizeFactor*randnum(35000,55000,i),0))})
+                        boundary, 'size', {'r': str(round(regionSizeFactor*randnum(35000,55000,i+thisSeed),0))})
                     
                 elif regionBoundaryClass == "cylinder": # Cylinder
                     boundary = etree.SubElement(region, 'boundary', {'class': "cylinder"})
                     boundarySize = etree.SubElement(
-                        boundary, 'size', {'r': str(round(regionSizeFactor*randnum(35000,55000,i),0)), 'linear': str(round(randnum(8000,15000,i),0))})
+                        boundary, 'size', {'r': str(round(regionSizeFactor*randnum(35000,55000,i+thisSeed),0)), 'linear': str(round(randnum(8000,15000,i+thisSeed),0))})
 
                 else:
                     if regionBoundaryClass == "splinetube" or i % 3 == 0: # Splinetube
                         boundary = etree.SubElement(region, 'boundary', {'class': "splinetube"})
-                        boundarySize = etree.SubElement(boundary, 'size', {'r': str(round(randnum(12000,22000,i),0))})
+                        boundarySize = etree.SubElement(boundary, 'size', {'r': str(round(randnum(12000,22000,i+thisSeed),0))})
 
                         # START Using Blender Addons
                         context = bpy.context
@@ -211,7 +211,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                     else:
                         boundary = etree.SubElement(region, 'boundary', {'class': "cylinder"})
                         boundarySize = etree.SubElement(
-                            boundary, 'size', {'r': str(round(regionSizeFactor*randnum(35000,55000,i),0)), 'linear': str(round(randnum(8000,15000,i),0))})
+                            boundary, 'size', {'r': str(round(regionSizeFactor*randnum(35000,55000,i+thisSeed),0)), 'linear': str(round(randnum(8000,15000,i+thisSeed),0))})
 
                 # Applies to all region shapes/boundary classes
                 falloff = etree.SubElement(region, 'falloff')
@@ -299,205 +299,205 @@ class Gen_Regions_Operator(bpy.types.Operator):
 
                 # Each of these adds its node only if the custom input file genRITree (A) did NOT say randomize="false" OR (B) doesn't exist OR (C) includes this sector and this field (NOTE: A is by default the opposite, so a random region will normally be made)
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/volumetricfog')) > 0: etree.SubElement(fields, 'volumetricfog', {
-                    'multiplier': str(round(randnum(0.002,0.2,i)*randnum(1,10,i),4)), #str(round(randnum(0.05,0.2,i),4))
-                    'medium': fogMediumList[int(randnum(0,len(fogMediumList),i))],
-                    'texture': fogTextureList[int(randnum(0,len(fogTextureList),i))], 
+                    'multiplier': str(round(randnum(0.002,0.2,i+thisSeed)*randnum(1,10,i+thisSeed),4)), #str(round(randnum(0.05,0.2,i),4))
+                    'medium': fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))],
+                    'texture': fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))], 
                     'lodrule': "nebulafar", 
-                    'size': str(round(randnum(15000,45000,i),0)),
+                    'size': str(round(randnum(15000,45000,i+thisSeed),0)),
                     'sizevariation': "0.4", 
-                    'densityfactor': str(round(randnum(0.002,0.2,i),4)), #str(round(randnum(0.005,0.2,i),4))
+                    'densityfactor': str(round(randnum(0.002,0.2,i+thisSeed),4)), #str(round(randnum(0.005,0.2,i),4))
                     'rotation': "360", 
                     'rotationvariation': "0.0", 
                     'noisescale': "15000", 
                     'seed': thisSeedStr, 
-                    'minnoisevalue': str(round(randnum(0.2,0.4,i),3)), #str(round(randnum(0,0.4,i),4))
-                    'maxnoisevalue': str(round(randnum(0.8,1.0,i),3)), #"1.0"
-                    'distancefactor': str(round(randnum(0.2,0.9,i),2))})
+                    'minnoisevalue': str(round(randnum(0.2,0.4,i+thisSeed),3)), #str(round(randnum(0,0.4,i),4))
+                    'maxnoisevalue': str(round(randnum(0.8,1.0,i+thisSeed),3)), #"1.0"
+                    'distancefactor': str(round(randnum(0.2,0.9,i+thisSeed),2))})
                 
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_xxl')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ore_xxl",
                         'lodrule': "asteroidxl",
-                        'densityfactor': str(round(factorDensity*randnum(0.1,0.5,i + 1),2)), #str(round(factorDensity*randnum(0.0005,0.0015,i + 1),4))
+                        'densityfactor': str(round(factorDensity*randnum(0.1,0.5,i+thisSeed + 1),2)), #str(round(factorDensity*randnum(0.0005,0.0015,i + 1),4))
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.9,1.0,i + 1)-0.2,3)), #str(round(randnum(0.9,0.95,i + 1),4))
-                        'maxnoisevalue': str(round(randnum(0.9,1.0,i + 1),3))}) #"1"
+                        'minnoisevalue': str(round(randnum(0.9,1.0,i+thisSeed + 1)-0.2,3)), #str(round(randnum(0.9,0.95,i + 1),4))
+                        'maxnoisevalue': str(round(randnum(0.9,1.0,i+thisSeed + 1),3))}) #"1"
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_xl')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ore_xl",
                         'lodrule': "asteroidxl",
-                        'densityfactor': str(round(factorDensity*randnum(0.3,1.5,i + 2),2)),
+                        'densityfactor': str(round(factorDensity*randnum(0.3,1.5,i+thisSeed + 2),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.8,1.0,i + 2)-0.2,3)), #str(round(randnum(0.7,0.75,i + 2),4))
-                        'maxnoisevalue': str(round(randnum(0.8,1.0,i + 2),3))}) #str(round(randnum(0.85,0.89,i + 2),4))
+                        'minnoisevalue': str(round(randnum(0.8,1.0,i+thisSeed + 2)-0.2,3)), #str(round(randnum(0.7,0.75,i + 2),4))
+                        'maxnoisevalue': str(round(randnum(0.8,1.0,i+thisSeed + 2),3))}) #str(round(randnum(0.85,0.89,i + 2),4))
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_l')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ore_l",
-                        'densityfactor': str(round(factorDensity*randnum(0.5,2.0,i + 3),2)),
+                        'densityfactor': str(round(factorDensity*randnum(0.5,2.0,i+thisSeed + 3),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.5,1.0,i + 3)-0.3,3)), #str(round(randnum(0.5,0.55,i + 3),4))
-                        'maxnoisevalue': str(round(randnum(0.5,1.0,i + 3),3))}) #str(round(randnum(0.65,0.69,i + 3),4))
+                        'minnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 3)-0.3,3)), #str(round(randnum(0.5,0.55,i + 3),4))
+                        'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 3),3))}) #str(round(randnum(0.65,0.69,i + 3),4))
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_m')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ore_m",
-                        'densityfactor': str(round(factorDensity*randnum(1.0,4.0,i + 4),2)),
+                        'densityfactor': str(round(factorDensity*randnum(1.0,4.0,i+thisSeed + 4),2)),
                         'rotation': "0",
                         'rotationvariation': "8",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.5,1.0,i + 4)-0.4,3)), #str(round(randnum(0.3,0.35,i + 4),4))
-                        'maxnoisevalue': str(round(randnum(0.5,1.0,i + 4),3))}) #str(round(randnum(0.45,0.49,i + 4),4))
+                        'minnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 4)-0.4,3)), #str(round(randnum(0.3,0.35,i + 4),4))
+                        'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 4),3))}) #str(round(randnum(0.45,0.49,i + 4),4))
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_s')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ore_s",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i + 5),2)),
+                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 5),2)),
                         'rotation': "0",
                         'rotationvariation': "16",
                         'noisescale': "1500",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.3,1.0,i + 5)-0.25,3)), #str(round(randnum(0.1,0.15,i + 5),4))
-                        'maxnoisevalue': str(round(randnum(0.3,1.0,i + 5),3))}) #str(round(randnum(0.25,0.29,i + 5),4))
+                        'minnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 5)-0.25,3)), #str(round(randnum(0.1,0.15,i + 5),4))
+                        'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 5),3))}) #str(round(randnum(0.25,0.29,i + 5),4))
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_xs')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ore_xs",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i + 6),2)),
+                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 6),2)),
                         'rotation': "0",
                         'rotationvariation': "32",
                         'noisescale': "1500",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.3,1.0,i + 6)-0.25,3)), #str(round(randnum(0.0,0.4,i + 6),4))
-                        'maxnoisevalue': str(round(randnum(0.3,1.0,i + 6),3))}) #str(round(randnum(0.05,0.09,i + 6),4))
+                        'minnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 6)-0.25,3)), #str(round(randnum(0.0,0.4,i + 6),4))
+                        'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 6),3))}) #str(round(randnum(0.05,0.09,i + 6),4))
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_xl')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_silicon_xl",
                         'lodrule': "asteroidxl",
-                        'densityfactor': str(round(factorDensity*randnum(0.3,1.5,i + 2),2)),
+                        'densityfactor': str(round(factorDensity*randnum(0.3,1.5,i+thisSeed + 2),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.8,1.0,i + 2)-0.2,3)),
-                        'maxnoisevalue': str(round(randnum(0.8,1.0,i + 2),3))})
+                        'minnoisevalue': str(round(randnum(0.8,1.0,i+thisSeed + 2)-0.2,3)),
+                        'maxnoisevalue': str(round(randnum(0.8,1.0,i+thisSeed + 2),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_l')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_silicon_l",
-                        'densityfactor': str(round(factorDensity*randnum(0.5,2.0,i + 3),2)),
+                        'densityfactor': str(round(factorDensity*randnum(0.5,2.0,i+thisSeed + 3),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.5,1.0,i + 3)-0.3,3)),
-                        'maxnoisevalue': str(round(randnum(0.5,1.0,i + 3),3))})
+                        'minnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 3)-0.3,3)),
+                        'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 3),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_m')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_silicon_m",
-                        'densityfactor': str(round(factorDensity*randnum(1.0,4.0,i + 4),2)),
+                        'densityfactor': str(round(factorDensity*randnum(1.0,4.0,i+thisSeed + 4),2)),
                         'rotation': "0",
                         'rotationvariation': "8",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.5,1.0,i + 4)-0.4,3)),
-                        'maxnoisevalue': str(round(randnum(0.5,1.0,i + 4),3))})
+                        'minnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 4)-0.4,3)),
+                        'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 4),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_s')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_silicon_s",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i + 5),2)),
+                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 5),2)),
                         'rotation': "0",
                         'rotationvariation': "16",
                         'noisescale': "1500",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.3,1.0,i + 5)-0.25,3)),
-                        'maxnoisevalue': str(round(randnum(0.3,1.0,i + 5),3))})
+                        'minnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 5)-0.25,3)),
+                        'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 5),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_xs')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_silicon_xs",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i + 6),2)),
+                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 6),2)),
                         'rotation': "0",
                         'rotationvariation': "32",
                         'noisescale': "1500",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.3,1.0,i + 6)-0.25,3)),
-                        'maxnoisevalue': str(round(randnum(0.3,1.0,i + 6),3))})
+                        'minnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 6)-0.25,3)),
+                        'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 6),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_xl')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ice_xl",
                         'lodrule': "asteroidxl",
-                        'densityfactor': str(round(factorDensity*randnum(0.3,1.5,i + 2),2)),
+                        'densityfactor': str(round(factorDensity*randnum(0.3,1.5,i+thisSeed + 2),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.8,1.0,i + 2)-0.2,3)),
-                        'maxnoisevalue': str(round(randnum(0.8,1.0,i + 2),3))})
+                        'minnoisevalue': str(round(randnum(0.8,1.0,i+thisSeed + 2)-0.2,3)),
+                        'maxnoisevalue': str(round(randnum(0.8,1.0,i+thisSeed + 2),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_l')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ice_l",
-                        'densityfactor': str(round(factorDensity*randnum(0.5,2.0,i + 3),2)),
+                        'densityfactor': str(round(factorDensity*randnum(0.5,2.0,i+thisSeed + 3),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.5,1.0,i + 3)-0.3,3)),
-                        'maxnoisevalue': str(round(randnum(0.5,1.0,i + 3),3))})
+                        'minnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 3)-0.3,3)),
+                        'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 3),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_m')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ice_m",
-                        'densityfactor': str(round(factorDensity*randnum(1.0,4.0,i + 4),2)),
+                        'densityfactor': str(round(factorDensity*randnum(1.0,4.0,i+thisSeed + 4),2)),
                         'rotation': "0",
                         'rotationvariation': "8",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.5,1.0,i + 4)-0.4,3)),
-                        'maxnoisevalue': str(round(randnum(0.5,1.0,i + 4),3))})
+                        'minnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 4)-0.4,3)),
+                        'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 4),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_s')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ice_s",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i + 5),2)),
+                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 5),2)),
                         'rotation': "0",
                         'rotationvariation': "16",
                         'noisescale': "1500",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.3,1.0,i + 5)-0.25,3)),
-                        'maxnoisevalue': str(round(randnum(0.3,1.0,i + 5),3))})
+                        'minnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 5)-0.25,3)),
+                        'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 5),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_xs')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ice_xs",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i + 6),2)),
+                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 6),2)),
                         'rotation': "0",
                         'rotationvariation': "16",
                         'noisescale': "5000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.3,1.0,i + 6)-0.25,3)),
-                        'maxnoisevalue': str(round(randnum(0.3,1.0,i + 6),3))})
+                        'minnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 6)-0.25,3)),
+                        'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 6),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_nividium_l')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_nividium_l",
-                        'densityfactor': str(round(factorDensity*randnum(0.5,2.0,i + 3),2)),
+                        'densityfactor': str(round(factorDensity*randnum(0.5,2.0,i+thisSeed + 3),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.5,1.0,i + 3)-0.3,3)),
-                        'maxnoisevalue': str(round(randnum(0.5,1.0,i + 3),3))})
+                        'minnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 3)-0.3,3)),
+                        'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 3),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_nividium_m')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_nividium_m",
-                        'densityfactor': str(round(factorDensity*randnum(1.0,4.0,i + 4),2)),
+                        'densityfactor': str(round(factorDensity*randnum(1.0,4.0,i+thisSeed + 4),2)),
                         'rotation': "0",
                         'rotationvariation': "8",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.5,1.0,i + 4)-0.4,3)),
-                        'maxnoisevalue': str(round(randnum(0.5,1.0,i + 4),3))})
+                        'minnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 4)-0.4,3)),
+                        'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 4),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_nividium_s')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_nividium_s",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i + 5),2)),
+                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 5),2)),
                         'rotation': "0",
                         'rotationvariation': "16",
                         'noisescale': "1500",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.3,1.0,i + 5)-0.25,3)),
-                        'maxnoisevalue': str(round(randnum(0.3,1.0,i + 5),3))})
+                        'minnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 5)-0.25,3)),
+                        'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 5),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_nividium_xs')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_nividium_xs",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i + 6),2)),
+                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 6),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
                         'seed': thisSeedStr,
-                        'minnoisevalue': str(round(randnum(0.3,1.0,i + 6)-0.25,3)),
-                        'maxnoisevalue': str(round(randnum(0.3,1.0,i + 6),3))})
+                        'minnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 6)-0.25,3)),
+                        'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 6),3))})
                 resources = etree.SubElement(region, 'resources')
                 resourceTypes = ['ore','silicon','ice','nividium','hydrogen','helium','methane'] # TODO add new when ready
                 gasTypes = ['hydrogen','helium','methane']
@@ -511,23 +511,23 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 # Adds nebula node only if the custom input file genRITree (A) did NOT say randomize="false" OR (B) doesn't exist OR (C) includes this sector and this field (NOTE: A is by default the opposite, so a random region will normally be made)
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/fogpattern_v2_macro')) > 0:
                     nebula = etree.SubElement(fields, 'nebula', {'ref': "fogpattern_v2_macro",
-                        'localred': str(round(randnum(50,200,i + 8),0)),
-                        'localgreen': str(round(randnum(50,200,i + 9),0)),
-                        'localblue': str(round(randnum(50,200,i + 10),0)),
-                        'localdensity': str(round(randnum(0.025,0.5,i),4)), #str(round(randnum(0,1,i),4))
-                        'uniformred': str(round(randnum(50,200,i + 8)/5,0)),
-                        'uniformgreen': str(round(randnum(50,200,i + 9)/5,0)),
-                        'uniformblue': str(round(randnum(50,200,i + 10)/5,0)),
-                        'uniformdensity': str(round(randnum(0.025,0.5,i)*4,4)), #str(round(randnum(0,2,i),4))
+                        'localred': str(round(randnum(50,200,i+thisSeed + 8),0)),
+                        'localgreen': str(round(randnum(50,200,i+thisSeed + 9),0)),
+                        'localblue': str(round(randnum(50,200,i+thisSeed + 10),0)),
+                        'localdensity': str(round(randnum(0.025,0.5,i+thisSeed),4)), #str(round(randnum(0,1,i),4))
+                        'uniformred': str(round(randnum(50,200,i+thisSeed + 8)/5,0)),
+                        'uniformgreen': str(round(randnum(50,200,i+thisSeed + 9)/5,0)),
+                        'uniformblue': str(round(randnum(50,200,i+thisSeed + 10)/5,0)),
+                        'uniformdensity': str(round(randnum(0.025,0.5,i+thisSeed)*4,4)), #str(round(randnum(0,2,i),4))
                         'backgroundfog': "false"})
                 # If nebula has been set, then add any set gas resources to it
-                if len(nebula.findall('.//ref')) > 0:
+                if len(fields.findall('.//nebula[@ref]')) > 0:
                     thisGasList = ""
                     # Loop through the 3 gas types above
                     for thisGasType in gasTypes:
                         # If this gas type is in the resources, add it as space separated value to variable
-                        if len(resources.findall('.//' + thisGasType)) > 0:
-                            thisGasList.append(thisGasType + " ")
+                        if len(resources.findall('.//resource[@ware="' + thisGasType + '"]')) > 0:
+                            thisGasList += thisGasType + " "
                     # Now add resources attribute to nebula using that variable
                     nebula.set('resources', thisGasList.rstrip())
 

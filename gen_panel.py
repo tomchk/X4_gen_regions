@@ -14,7 +14,7 @@ class MyProperties(PropertyGroup):
     source: StringProperty(
         name="Source",
         description="Paste full file path here",
-        default="C:/Games/Steam/steamapps/common/X4 Foundations/extensions/planet_builder/assets/environments/cluster/Cluster_pb.xml",
+        default="D:/X4_out/planet_builder/maps/demo_universe/demo_sectors.xml",
         maxlen=1024,
         )
 
@@ -25,9 +25,15 @@ class MyProperties(PropertyGroup):
         maxlen=1024,
         )
 
+    seed: StringProperty(
+        name="Seed",
+        description="Enter seed here. You should get the same results with the same seed.",
+        default="4231",
+        maxlen=1024,
+        )
 
-class Gen_PT_Panel(bpy.types.Panel):
-    bl_idname = "Gen_PT_Panel"
+class GEN_PT_Panel(bpy.types.Panel):
+    bl_idname = "GEN_PT_Panel"
     bl_label = "X4 Generator Panel"
     bl_category = "Generator" #"Tools"
     bl_space_type = "VIEW_3D"
@@ -45,6 +51,7 @@ class Gen_PT_Panel(bpy.types.Panel):
        
         layout.prop(mytool, "source")
         layout.prop(mytool, "target")
+        layout.prop(mytool, "seed")
         layout.separator()
 
         row = layout.row()
