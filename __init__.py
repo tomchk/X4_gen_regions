@@ -16,8 +16,7 @@ from . gen_orbits import Gen_Orbits_Operator
 from . gen_orbits_in_cluster import Gen_Orbits_In_Cluster_Operator
 from . blender_to_anixml import Blender_To_AniXML_Operator
 from . gen_ani import Gen_Ani_Operator
-from . gen_panel import MyProperties
-from . gen_panel import GEN_PT_Panel
+from . gen_panel import *
 
 from bpy.props import (StringProperty,
                        PointerProperty,
