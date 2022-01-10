@@ -33,7 +33,7 @@ class MyProperties(PropertyGroup):
         )
 
 class GEN_PT_Panel(bpy.types.Panel):
-    bl_idname = "GEN_PT_Panel"
+    bl_idname = "GEN_PT_Panel_id"
     bl_label = "X4 Generator Panel"
     bl_category = "Generator" #"Tools"
     bl_space_type = "VIEW_3D"
