@@ -1,6 +1,17 @@
 # X4_gen_regions
 This is a WIP Blender addon that handles Blender animation exporting to X4 binary ani files. It also can generate randomized regions.
 
+INSTALLATION:
+
+(1) Click Code button.
+
+(2) Click Download ZIP.
+
+(3) Rename ZIP to "X4_gen_regions.zip" (remove the "-main").
+
+(4) Follow this to install the ZIP in Blender: https://youtu.be/LzdoUTvAgXk?t=84
+
+
 ANIMATION: 
 
 Most users should follow these steps:
