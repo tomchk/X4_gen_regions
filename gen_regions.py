@@ -126,6 +126,64 @@ class Gen_Regions_Operator(bpy.types.Operator):
         )
 
         #regionDefXML.append(Comment('Generated XML'))
+                
+        # List of desired fog mediums from collector edition
+        fogMediumList = [
+            'fog_asteroidbelt',
+            'fog_asteroidbelt2',
+            'fog_blue',
+            'fog_blue_mist',
+            'fog_bluepink',
+            'fog_blueveins',
+            'fog_brown',
+            'fog_burgundy',
+            'fog_cluster114a',
+            'fog_cluster114b',
+            'fog_cluster_14_basefill',
+            'fog_cluster_14_sector_001',
+            'fog_cluster_33_sector_001',
+            'fog_darkblue',
+            'fog_greenveins',
+            'fog_grey',
+            'fog_grey_emissive',
+            'fog_grey_emissive2',
+            'fog_greybase',
+            'fog_greystructure',
+            'fog_lightbrown',
+            'fog_lightbrown_base',
+            'fog_lightbrown_base_var1',
+            'fog_lightgreen',
+            'fog_orange_directional',
+            'fog_orange_directional_var1',
+            'fog_red',
+            'fog_saturnbelt',
+            'fog_saturnbelt2',
+            'fog_structurefield',
+            'fog_turquoise',
+            'fog_whiteblue',
+            'fog_whiteblue_emissive',
+            'fog_wreckfield',
+            'helium',
+            'hydrogen'
+        ]
+
+        # List of desired fog textures from collector edition
+        fogTextureList = [
+            'assets/textures/environments/fog_maskrnd_03',
+            'assets/textures/environments/fog_maskrnd_06_gui',
+            'assets/textures/environments/fog_maskrnd_07',
+            'assets/textures/environments/fog_patterncloud_01',
+            'assets/textures/environments/fog_patterncloud_02',
+            'assets/textures/environments/fog_patterncloud_03',
+            'assets/textures/environments/fog_patterncloud_04',
+            'assets/textures/environments/fog_patterncloud_06',
+            'assets/textures/environments/fog_patterncloud_07',
+            'assets/textures/environments/fog_patterncloud_08',
+            'assets/textures/environments/fog_smoothclouds_01',
+            'assets/textures/environments/fog_smoothclouds_03',
+            'assets/textures/environments/volumefog/vf_chunky_diff',
+            'assets/textures/environments/volumefog/vf_structured_01_diff'
+        ]
 
         i = 0
         #for thisMacro in sourceTree.findall("./macro[@class='cluster']"): 
@@ -235,93 +293,33 @@ class Gen_Regions_Operator(bpy.types.Operator):
 
                 fields = etree.SubElement(region, 'fields')
                 
-                # List of desired fog mediums from collector edition
-                fogMediumList = [
-                    'fog_asteroidbelt',
-                    'fog_asteroidbelt2',
-                    'fog_blue',
-                    'fog_blue_mist',
-                    'fog_bluepink',
-                    'fog_blueveins',
-                    'fog_brown',
-                    'fog_burgundy',
-                    'fog_cluster114a',
-                    'fog_cluster114b',
-                    'fog_cluster_14_basefill',
-                    'fog_cluster_14_sector_001',
-                    'fog_cluster_33_sector_001',
-                    'fog_darkblue',
-                    'fog_greenveins',
-                    'fog_grey',
-                    'fog_grey_emissive',
-                    'fog_grey_emissive2',
-                    'fog_greybase',
-                    'fog_greystructure',
-                    'fog_lightbrown',
-                    'fog_lightbrown_base',
-                    'fog_lightbrown_base_var1',
-                    'fog_lightgreen',
-                    'fog_orange_directional',
-                    'fog_orange_directional_var1',
-                    'fog_red',
-                    'fog_saturnbelt',
-                    'fog_saturnbelt2',
-                    'fog_structurefield',
-                    'fog_turquoise',
-                    'fog_whiteblue',
-                    'fog_whiteblue_emissive',
-                    'fog_wreckfield',
-                    'helium',
-                    'hydrogen'
-                ]
-
-                # List of desired fog textures from collector edition
-                fogTextureList = [
-                    'assets/textures/environments/fog_maskrnd_03',
-                    'assets/textures/environments/fog_maskrnd_06_gui',
-                    'assets/textures/environments/fog_maskrnd_07',
-                    'assets/textures/environments/fog_patterncloud_01',
-                    'assets/textures/environments/fog_patterncloud_02',
-                    'assets/textures/environments/fog_patterncloud_03',
-                    'assets/textures/environments/fog_patterncloud_04',
-                    'assets/textures/environments/fog_patterncloud_06',
-                    'assets/textures/environments/fog_patterncloud_07',
-                    'assets/textures/environments/fog_patterncloud_08',
-                    'assets/textures/environments/fog_smoothclouds_01',
-                    'assets/textures/environments/fog_smoothclouds_03',
-                    'assets/textures/environments/volumefog/vf_chunky_diff',
-                    'assets/textures/environments/volumefog/vf_structured_01_diff'
-                ]
-
-                # for element in fogMediumTree.findall(".//medium"): 
-                #     fogMediumList.append(element.text)
-                # for element in fogTextureTree.findall(".//texture"): 
-                #     fogTextureList.append(element.text)
+                thisFogMedium = fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))]
+                thisFogTexture = fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))]
 
                 # List of volumetric fog nodes as temporary solution
-                fogsString = '''<volumetricfog multiplier="4" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="48000" sizevariation="0.5" densityfactor="0.0150" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.40" maxnoisevalue="1.0" distancefactor="0.40"/>
-<volumetricfog multiplier="2" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="48000" sizevariation="0.5" densityfactor="0.010" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.40" distancefactor="0.40"/>
-<volumetricfog multiplier="1.0" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="60000" sizevariation="0.5" densityfactor="0.05" rotation="0" rotationvariation="0.50" noisescale="25000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="1.0" distancefactor="0.40"/>
-<volumetricfog multiplier="0.051" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="20000" sizevariation="0.5" densityfactor="1.0" rotation="0" rotationvariation="0.50" noisescale="25000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="1.0" distancefactor="0.40"/>
-<volumetricfog multiplier="0.150" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="64000" sizevariation="0.5" densityfactor="0.005" rotation="0" rotationvariation="0.50" noisescale="120000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.40" distancefactor="0.75"/>
-<volumetricfog multiplier="0.130" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="128000" sizevariation="0.5" densityfactor="0.0350" rotation="0" rotationvariation="0.50" noisescale="120000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.40" distancefactor="0.75"/>
-<volumetricfog multiplier="0.31" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="128000" sizevariation="0.5" densityfactor="0.0150" rotation="0" rotationvariation="0.50" noisescale="120000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.50" distancefactor="1.750"/>
-<volumetricfog multiplier="1.0" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="120000" densityfactor="0.0051" rotation="360" rotationvariation="0.5" noisescale="1000000" seed="''' + thisSeedStr + '''" minnoisevalue="0.2" maxnoisevalue="1.0" distancefactor="0.0" />
-<volumetricfog multiplier="1.0" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="16000" densityfactor="1.0" rotation="360" rotationvariation="0.5" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="1.0" distancefactor="0.0" />
-<volumetricfog multiplier="0.10" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebula" size="128000" densityfactor="0.008" rotation="360" rotationvariation="0.5" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="1.0" distancefactor="0.10" />
-<volumetricfog multiplier="1.0" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="128000" densityfactor="0.0021" rotation="360" rotationvariation="0.5" noisescale="40000" seed="''' + thisSeedStr + '''" minnoisevalue="0.1" maxnoisevalue="1.0" distancefactor="0.0" />
-<volumetricfog multiplier="4.0" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="104000" densityfactor="0.0021" rotation="360" rotationvariation="0.5" noisescale="40000" seed="''' + thisSeedStr + '''" minnoisevalue="0.60" maxnoisevalue="1.0" distancefactor="0.0" />
-<volumetricfog multiplier="2.0" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="26000" densityfactor="0.025" rotation="0" rotationvariation="0.0" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.6" maxnoisevalue="1.0" distancefactor="0.0" />
-<volumetricfog multiplier="4.0" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="164000" densityfactor="0.005" rotation="360" rotationvariation="0.5" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="0.10" />
-<volumetricfog multiplier="5.0" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="24000" sizevariation="0.95" densityfactor="0.10" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="0.80" distancefactor="0.40"/>
-<volumetricfog multiplier="0.41" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="44000" sizevariation="0.15" densityfactor="0.05" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.20" maxnoisevalue="0.40" distancefactor="2.0"/>
-<volumetricfog multiplier="0.10" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="24000" sizevariation="0.25" densityfactor="0.1" rotation="0" rotationvariation="0.50" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.6" maxnoisevalue="1.0" distancefactor="1.0"/>
-<volumetricfog multiplier="1.510" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="24000" sizevariation="0.94" densityfactor="1.15" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="0.40"/>
-<volumetricfog multiplier="0.10" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="20000" sizevariation="0.932" densityfactor="0.2" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="1.0" distancefactor="0.40"/>
-<volumetricfog multiplier="0.10" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="120000" sizevariation="0.4" densityfactor="0.001" rotation="360" rotationvariation="0.5" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="1.0"/>
-<volumetricfog multiplier="0.250" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="128000" densityfactor="0.0001" rotation="360" rotationvariation="0.5" noisescale="1000" seed="''' + thisSeedStr + '''" minnoisevalue="0.15" maxnoisevalue="1.0" distancefactor="0.13"/>
-<volumetricfog multiplier="1.510" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="24000" sizevariation="0.94" densityfactor="1.15" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="0.40"/>
-<volumetricfog multiplier="1.1510" medium="''' + fogMediumList[int(randnum(0,len(fogMediumList),i+thisSeed))] + '''" texture="''' + fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))] + '''" lodrule="nebulafar" size="24000" sizevariation="0.932" densityfactor="1.32" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.20" maxnoisevalue="1.0" distancefactor="0.60"/>'''
+                fogsString = '''<volumetricfog multiplier="4" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="48000" sizevariation="0.5" densityfactor="0.0150" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.40" maxnoisevalue="1.0" distancefactor="0.40"/>
+<volumetricfog multiplier="2" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="48000" sizevariation="0.5" densityfactor="0.010" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.40" distancefactor="0.40"/>
+<volumetricfog multiplier="1.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="60000" sizevariation="0.5" densityfactor="0.05" rotation="0" rotationvariation="0.50" noisescale="25000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="1.0" distancefactor="0.40"/>
+<volumetricfog multiplier="0.051" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="20000" sizevariation="0.5" densityfactor="1.0" rotation="0" rotationvariation="0.50" noisescale="25000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="1.0" distancefactor="0.40"/>
+<volumetricfog multiplier="0.150" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="64000" sizevariation="0.5" densityfactor="0.005" rotation="0" rotationvariation="0.50" noisescale="120000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.40" distancefactor="0.75"/>
+<volumetricfog multiplier="0.130" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="128000" sizevariation="0.5" densityfactor="0.0350" rotation="0" rotationvariation="0.50" noisescale="120000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.40" distancefactor="0.75"/>
+<volumetricfog multiplier="0.31" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="128000" sizevariation="0.5" densityfactor="0.0150" rotation="0" rotationvariation="0.50" noisescale="120000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.50" distancefactor="1.750"/>
+<volumetricfog multiplier="1.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="120000" densityfactor="0.0051" rotation="360" rotationvariation="0.5" noisescale="1000000" seed="''' + thisSeedStr + '''" minnoisevalue="0.2" maxnoisevalue="1.0" distancefactor="0.0" />
+<volumetricfog multiplier="1.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="16000" densityfactor="1.0" rotation="360" rotationvariation="0.5" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="1.0" distancefactor="0.0" />
+<volumetricfog multiplier="0.10" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebula" size="128000" densityfactor="0.008" rotation="360" rotationvariation="0.5" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="1.0" distancefactor="0.10" />
+<volumetricfog multiplier="1.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="128000" densityfactor="0.0021" rotation="360" rotationvariation="0.5" noisescale="40000" seed="''' + thisSeedStr + '''" minnoisevalue="0.1" maxnoisevalue="1.0" distancefactor="0.0" />
+<volumetricfog multiplier="4.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="104000" densityfactor="0.0021" rotation="360" rotationvariation="0.5" noisescale="40000" seed="''' + thisSeedStr + '''" minnoisevalue="0.60" maxnoisevalue="1.0" distancefactor="0.0" />
+<volumetricfog multiplier="2.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="26000" densityfactor="0.025" rotation="0" rotationvariation="0.0" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.6" maxnoisevalue="1.0" distancefactor="0.0" />
+<volumetricfog multiplier="4.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="164000" densityfactor="0.005" rotation="360" rotationvariation="0.5" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="0.10" />
+<volumetricfog multiplier="5.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.95" densityfactor="0.10" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="0.80" distancefactor="0.40"/>
+<volumetricfog multiplier="0.41" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="44000" sizevariation="0.15" densityfactor="0.05" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.20" maxnoisevalue="0.40" distancefactor="2.0"/>
+<volumetricfog multiplier="0.10" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.25" densityfactor="0.1" rotation="0" rotationvariation="0.50" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.6" maxnoisevalue="1.0" distancefactor="1.0"/>
+<volumetricfog multiplier="1.510" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.94" densityfactor="1.15" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="0.40"/>
+<volumetricfog multiplier="0.10" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="20000" sizevariation="0.932" densityfactor="0.2" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="1.0" distancefactor="0.40"/>
+<volumetricfog multiplier="0.10" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="120000" sizevariation="0.4" densityfactor="0.001" rotation="360" rotationvariation="0.5" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="1.0"/>
+<volumetricfog multiplier="0.250" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="128000" densityfactor="0.0001" rotation="360" rotationvariation="0.5" noisescale="1000" seed="''' + thisSeedStr + '''" minnoisevalue="0.15" maxnoisevalue="1.0" distancefactor="0.13"/>
+<volumetricfog multiplier="1.510" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.94" densityfactor="1.15" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="0.40"/>
+<volumetricfog multiplier="1.1510" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.932" densityfactor="1.32" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.20" maxnoisevalue="1.0" distancefactor="0.60"/>'''
 
                 # Each of these adds its node only if the custom input file genRITree (A) did NOT say randomize="false" OR (B) doesn't exist OR (C) includes this sector and this field (NOTE: A is by default the opposite, so a random region will normally be made)
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/volumetricfog')) > 0:
