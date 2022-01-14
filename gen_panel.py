@@ -32,6 +32,13 @@ class MyProperties(PropertyGroup):
         maxlen=1024,
         )
 
+    densityMultiplier: StringProperty(
+        name="Density Multiplier",
+        description="This affects the densityfactor for all fields. 0.5 appears to be the best. Change with caution.",
+        default="0.5",
+        maxlen=10,
+        )
+
 class GEN_PT_Panel(bpy.types.Panel):
     bl_idname = "GEN_PT_Panel_id"
     bl_label = "X4 Generator Panel"
@@ -52,6 +59,7 @@ class GEN_PT_Panel(bpy.types.Panel):
         layout.prop(mytool, "source")
         layout.prop(mytool, "target")
         layout.prop(mytool, "seed")
+        layout.prop(mytool, "densityMultiplier")
         layout.separator()
 
         row = layout.row()
