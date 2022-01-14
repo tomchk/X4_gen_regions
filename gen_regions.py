@@ -94,7 +94,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
         if noGenRegionsInput: # See sample input below
             genRITree = etree.XML(
 '''<gen_regions_input>
-    <sample_sector_macro noregion="false" randomize="false" sizefactor="2" class="sphere">
+    <sample_sector_macro noregion="false" randomize="false" sizefactor="2" densitymultiplier="1" class="sphere">
         <fields>
             <volumetricfog></volumetricfog>
             <asteroid_ore_xxl></asteroid_ore_xxl>
@@ -207,8 +207,11 @@ class Gen_Regions_Operator(bpy.types.Operator):
 
                 # OPTIONAL Factor for multiplying radius or making splinetube cover more space
                 regionSizeFactor = 1
+                regionDensityMultiplier = 1
                 if len(genRITree.findall('.//' + thisMacroName + '[@sizefactor]')) > 0: # Will proceed only if the tag includes this attribute
                     regionSizeFactor = float(genRITree.find('.//' + thisMacroName + '[@sizefactor]').attrib['sizefactor'])
+                if len(genRITree.findall('.//' + thisMacroName + '[@densitymultiplier]')) > 0: # Will proceed only if the tag includes this attribute
+                    regionDensityMultiplier = float(genRITree.find('.//' + thisMacroName + '[@densitymultiplier]').attrib['densitymultiplier'])
 
                 # OPTIONAL String for specifying region shape (boundary class)
                 regionBoundaryClass = ""
@@ -298,29 +301,29 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 thisFogTexture = fogTextureList[int(randnum(0,len(fogTextureList),i+thisSeed))]
 
                 # List of volumetric fog nodes as temporary solution
-                fogsString = '''<volumetricfog multiplier="4" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="48000" sizevariation="0.5" densityfactor="''' + factorDensity*0.0150 + '''" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.40" maxnoisevalue="1.0" distancefactor="0.40"/>
-<volumetricfog multiplier="2" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="48000" sizevariation="0.5" densityfactor="''' + factorDensity*0.010 + '''" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.40" distancefactor="0.40"/>
-<volumetricfog multiplier="1.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="60000" sizevariation="0.5" densityfactor="''' + factorDensity*0.05 + '''" rotation="0" rotationvariation="0.50" noisescale="25000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="1.0" distancefactor="0.40"/>
-<volumetricfog multiplier="0.051" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="20000" sizevariation="0.5" densityfactor="''' + factorDensity*1.0 + '''" rotation="0" rotationvariation="0.50" noisescale="25000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="1.0" distancefactor="0.40"/>
-<volumetricfog multiplier="0.150" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="64000" sizevariation="0.5" densityfactor="''' + factorDensity*0.005 + '''" rotation="0" rotationvariation="0.50" noisescale="120000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.40" distancefactor="0.75"/>
-<volumetricfog multiplier="0.130" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="128000" sizevariation="0.5" densityfactor="''' + factorDensity*0.0350 + '''" rotation="0" rotationvariation="0.50" noisescale="120000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.40" distancefactor="0.75"/>
-<volumetricfog multiplier="0.31" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="128000" sizevariation="0.5" densityfactor="''' + factorDensity*0.0150 + '''" rotation="0" rotationvariation="0.50" noisescale="120000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.50" distancefactor="1.750"/>
-<volumetricfog multiplier="1.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="120000" densityfactor="''' + factorDensity*0.0051 + '''" rotation="360" rotationvariation="0.5" noisescale="1000000" seed="''' + thisSeedStr + '''" minnoisevalue="0.2" maxnoisevalue="1.0" distancefactor="0.0" />
-<volumetricfog multiplier="1.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="16000" densityfactor="''' + factorDensity*1.0 + '''" rotation="360" rotationvariation="0.5" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="1.0" distancefactor="0.0" />
-<volumetricfog multiplier="0.10" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebula" size="128000" densityfactor="''' + factorDensity*0.008 + '''" rotation="360" rotationvariation="0.5" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="1.0" distancefactor="0.10" />
-<volumetricfog multiplier="1.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="128000" densityfactor="''' + factorDensity*0.0021 + '''" rotation="360" rotationvariation="0.5" noisescale="40000" seed="''' + thisSeedStr + '''" minnoisevalue="0.1" maxnoisevalue="1.0" distancefactor="0.0" />
-<volumetricfog multiplier="4.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="104000" densityfactor="''' + factorDensity*0.0021 + '''" rotation="360" rotationvariation="0.5" noisescale="40000" seed="''' + thisSeedStr + '''" minnoisevalue="0.60" maxnoisevalue="1.0" distancefactor="0.0" />
-<volumetricfog multiplier="2.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="26000" densityfactor="''' + factorDensity*0.025 + '''" rotation="0" rotationvariation="0.0" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.6" maxnoisevalue="1.0" distancefactor="0.0" />
-<volumetricfog multiplier="4.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="164000" densityfactor="''' + factorDensity*0.005 + '''" rotation="360" rotationvariation="0.5" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="0.10" />
-<volumetricfog multiplier="5.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.95" densityfactor="''' + factorDensity*0.10 + '''" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="0.80" distancefactor="0.40"/>
-<volumetricfog multiplier="0.41" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="44000" sizevariation="0.15" densityfactor="''' + factorDensity*0.05 + '''" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.20" maxnoisevalue="0.40" distancefactor="2.0"/>
-<volumetricfog multiplier="0.10" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.25" densityfactor="''' + factorDensity*0.1 + '''" rotation="0" rotationvariation="0.50" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.6" maxnoisevalue="1.0" distancefactor="1.0"/>
-<volumetricfog multiplier="1.510" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.94" densityfactor="''' + factorDensity*1.15 + '''" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="0.40"/>
-<volumetricfog multiplier="0.10" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="20000" sizevariation="0.932" densityfactor="''' + factorDensity*0.2 + '''" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="1.0" distancefactor="0.40"/>
-<volumetricfog multiplier="0.10" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="120000" sizevariation="0.4" densityfactor="''' + factorDensity*0.001 + '''" rotation="360" rotationvariation="0.5" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="1.0"/>
-<volumetricfog multiplier="0.250" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="128000" densityfactor="''' + factorDensity*0.0001 + '''" rotation="360" rotationvariation="0.5" noisescale="1000" seed="''' + thisSeedStr + '''" minnoisevalue="0.15" maxnoisevalue="1.0" distancefactor="0.13"/>
-<volumetricfog multiplier="1.510" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.94" densityfactor="''' + factorDensity*1.15 + '''" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="0.40"/>
-<volumetricfog multiplier="1.1510" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.932" densityfactor="''' + factorDensity*1.32 + '''" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.20" maxnoisevalue="1.0" distancefactor="0.60"/>'''
+                fogsString = '''<volumetricfog multiplier="4" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="48000" sizevariation="0.5" densityfactor="''' + factorDensity*regionDensityMultiplier*0.0150 + '''" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.40" maxnoisevalue="1.0" distancefactor="0.40"/>
+<volumetricfog multiplier="2" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="48000" sizevariation="0.5" densityfactor="''' + factorDensity*regionDensityMultiplier*0.010 + '''" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.40" distancefactor="0.40"/>
+<volumetricfog multiplier="1.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="60000" sizevariation="0.5" densityfactor="''' + factorDensity*regionDensityMultiplier*0.05 + '''" rotation="0" rotationvariation="0.50" noisescale="25000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="1.0" distancefactor="0.40"/>
+<volumetricfog multiplier="0.051" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="20000" sizevariation="0.5" densityfactor="''' + factorDensity*regionDensityMultiplier*1.0 + '''" rotation="0" rotationvariation="0.50" noisescale="25000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="1.0" distancefactor="0.40"/>
+<volumetricfog multiplier="0.150" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="64000" sizevariation="0.5" densityfactor="''' + factorDensity*regionDensityMultiplier*0.005 + '''" rotation="0" rotationvariation="0.50" noisescale="120000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.40" distancefactor="0.75"/>
+<volumetricfog multiplier="0.130" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="128000" sizevariation="0.5" densityfactor="''' + factorDensity*regionDensityMultiplier*0.0350 + '''" rotation="0" rotationvariation="0.50" noisescale="120000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.40" distancefactor="0.75"/>
+<volumetricfog multiplier="0.31" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="128000" sizevariation="0.5" densityfactor="''' + factorDensity*regionDensityMultiplier*0.0150 + '''" rotation="0" rotationvariation="0.50" noisescale="120000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="0.50" distancefactor="1.750"/>
+<volumetricfog multiplier="1.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="120000" densityfactor="''' + factorDensity*regionDensityMultiplier*0.0051 + '''" rotation="360" rotationvariation="0.5" noisescale="1000000" seed="''' + thisSeedStr + '''" minnoisevalue="0.2" maxnoisevalue="1.0" distancefactor="0.0" />
+<volumetricfog multiplier="1.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="16000" densityfactor="''' + factorDensity*regionDensityMultiplier*1.0 + '''" rotation="360" rotationvariation="0.5" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="1.0" distancefactor="0.0" />
+<volumetricfog multiplier="0.10" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebula" size="128000" densityfactor="''' + factorDensity*regionDensityMultiplier*0.008 + '''" rotation="360" rotationvariation="0.5" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.0" maxnoisevalue="1.0" distancefactor="0.10" />
+<volumetricfog multiplier="1.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="128000" densityfactor="''' + factorDensity*regionDensityMultiplier*0.0021 + '''" rotation="360" rotationvariation="0.5" noisescale="40000" seed="''' + thisSeedStr + '''" minnoisevalue="0.1" maxnoisevalue="1.0" distancefactor="0.0" />
+<volumetricfog multiplier="4.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="104000" densityfactor="''' + factorDensity*regionDensityMultiplier*0.0021 + '''" rotation="360" rotationvariation="0.5" noisescale="40000" seed="''' + thisSeedStr + '''" minnoisevalue="0.60" maxnoisevalue="1.0" distancefactor="0.0" />
+<volumetricfog multiplier="2.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="26000" densityfactor="''' + factorDensity*regionDensityMultiplier*0.025 + '''" rotation="0" rotationvariation="0.0" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.6" maxnoisevalue="1.0" distancefactor="0.0" />
+<volumetricfog multiplier="4.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="164000" densityfactor="''' + factorDensity*regionDensityMultiplier*0.005 + '''" rotation="360" rotationvariation="0.5" noisescale="10000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="0.10" />
+<volumetricfog multiplier="5.0" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.95" densityfactor="''' + factorDensity*regionDensityMultiplier*0.10 + '''" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="0.80" distancefactor="0.40"/>
+<volumetricfog multiplier="0.41" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="44000" sizevariation="0.15" densityfactor="''' + factorDensity*regionDensityMultiplier*0.05 + '''" rotation="0" rotationvariation="0.50" noisescale="50000" seed="''' + thisSeedStr + '''" minnoisevalue="0.20" maxnoisevalue="0.40" distancefactor="2.0"/>
+<volumetricfog multiplier="0.10" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.25" densityfactor="''' + factorDensity*regionDensityMultiplier*0.1 + '''" rotation="0" rotationvariation="0.50" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.6" maxnoisevalue="1.0" distancefactor="1.0"/>
+<volumetricfog multiplier="1.510" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.94" densityfactor="''' + factorDensity*regionDensityMultiplier*1.15 + '''" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="0.40"/>
+<volumetricfog multiplier="0.10" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="20000" sizevariation="0.932" densityfactor="''' + factorDensity*regionDensityMultiplier*0.2 + '''" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.70" maxnoisevalue="1.0" distancefactor="0.40"/>
+<volumetricfog multiplier="0.10" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="120000" sizevariation="0.4" densityfactor="''' + factorDensity*regionDensityMultiplier*0.001 + '''" rotation="360" rotationvariation="0.5" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="1.0"/>
+<volumetricfog multiplier="0.250" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="128000" densityfactor="''' + factorDensity*regionDensityMultiplier*0.0001 + '''" rotation="360" rotationvariation="0.5" noisescale="1000" seed="''' + thisSeedStr + '''" minnoisevalue="0.15" maxnoisevalue="1.0" distancefactor="0.13"/>
+<volumetricfog multiplier="1.510" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.94" densityfactor="''' + factorDensity*regionDensityMultiplier*1.15 + '''" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.4" maxnoisevalue="1.0" distancefactor="0.40"/>
+<volumetricfog multiplier="1.1510" medium="''' + thisFogMedium + '''" texture="''' + thisFogTexture + '''" lodrule="nebulafar" size="24000" sizevariation="0.932" densityfactor="''' + factorDensity*regionDensityMultiplier*1.32 + '''" rotation="0" rotationvariation="0.05" noisescale="5000" seed="''' + thisSeedStr + '''" minnoisevalue="0.20" maxnoisevalue="1.0" distancefactor="0.60"/>'''
 
                 # Each of these adds its node only if the custom input file genRITree (A) did NOT say randomize="false" OR (B) doesn't exist OR (C) includes this sector and this field (NOTE: A is by default the opposite, so a random region will normally be made)
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/volumetricfog')) > 0:
@@ -329,7 +332,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_xxl')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ore_xxl",
                         'lodrule': "asteroidxl",
-                        'densityfactor': str(round(factorDensity*randnum(0.1,0.5,i+thisSeed + 1),2)), #str(round(factorDensity*randnum(0.0005,0.0015,i + 1),4))
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(0.1,0.5,i+thisSeed + 1),2)), #str(round(factorDensity*regionDensityMultiplier*randnum(0.0005,0.0015,i + 1),4))
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
@@ -339,7 +342,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_xl')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ore_xl",
                         'lodrule': "asteroidxl",
-                        'densityfactor': str(round(factorDensity*randnum(0.3,1.5,i+thisSeed + 2),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(0.3,1.5,i+thisSeed + 2),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
@@ -348,7 +351,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.8,1.0,i+thisSeed + 2),3))}) #str(round(randnum(0.85,0.89,i + 2),4))
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_l')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ore_l",
-                        'densityfactor': str(round(factorDensity*randnum(0.5,2.0,i+thisSeed + 3),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(0.5,2.0,i+thisSeed + 3),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
@@ -357,7 +360,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 3),3))}) #str(round(randnum(0.65,0.69,i + 3),4))
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_m')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ore_m",
-                        'densityfactor': str(round(factorDensity*randnum(1.0,4.0,i+thisSeed + 4),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(1.0,4.0,i+thisSeed + 4),2)),
                         'rotation': "0",
                         'rotationvariation': "8",
                         'noisescale': "15000",
@@ -366,7 +369,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 4),3))}) #str(round(randnum(0.45,0.49,i + 4),4))
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_s')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ore_s",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 5),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(2.0,6.0,i+thisSeed + 5),2)),
                         'rotation': "0",
                         'rotationvariation': "16",
                         'noisescale': "1500",
@@ -375,7 +378,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 5),3))}) #str(round(randnum(0.25,0.29,i + 5),4))
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ore_xs')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ore_xs",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 6),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(2.0,6.0,i+thisSeed + 6),2)),
                         'rotation': "0",
                         'rotationvariation': "32",
                         'noisescale': "1500",
@@ -385,7 +388,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_xl')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_silicon_xl",
                         'lodrule': "asteroidxl",
-                        'densityfactor': str(round(factorDensity*randnum(0.3,1.5,i+thisSeed + 2),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(0.3,1.5,i+thisSeed + 2),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
@@ -394,7 +397,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.8,1.0,i+thisSeed + 2),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_l')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_silicon_l",
-                        'densityfactor': str(round(factorDensity*randnum(0.5,2.0,i+thisSeed + 3),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(0.5,2.0,i+thisSeed + 3),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
@@ -403,7 +406,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 3),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_m')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_silicon_m",
-                        'densityfactor': str(round(factorDensity*randnum(1.0,4.0,i+thisSeed + 4),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(1.0,4.0,i+thisSeed + 4),2)),
                         'rotation': "0",
                         'rotationvariation': "8",
                         'noisescale': "15000",
@@ -412,7 +415,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 4),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_s')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_silicon_s",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 5),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(2.0,6.0,i+thisSeed + 5),2)),
                         'rotation': "0",
                         'rotationvariation': "16",
                         'noisescale': "1500",
@@ -421,7 +424,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 5),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_silicon_xs')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_silicon_xs",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 6),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(2.0,6.0,i+thisSeed + 6),2)),
                         'rotation': "0",
                         'rotationvariation': "32",
                         'noisescale': "1500",
@@ -431,7 +434,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_xl')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ice_xl",
                         'lodrule': "asteroidxl",
-                        'densityfactor': str(round(factorDensity*randnum(0.3,1.5,i+thisSeed + 2),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(0.3,1.5,i+thisSeed + 2),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
@@ -440,7 +443,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.8,1.0,i+thisSeed + 2),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_l')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ice_l",
-                        'densityfactor': str(round(factorDensity*randnum(0.5,2.0,i+thisSeed + 3),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(0.5,2.0,i+thisSeed + 3),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
@@ -449,7 +452,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 3),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_m')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ice_m",
-                        'densityfactor': str(round(factorDensity*randnum(1.0,4.0,i+thisSeed + 4),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(1.0,4.0,i+thisSeed + 4),2)),
                         'rotation': "0",
                         'rotationvariation': "8",
                         'noisescale': "15000",
@@ -458,7 +461,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 4),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_s')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ice_s",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 5),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(2.0,6.0,i+thisSeed + 5),2)),
                         'rotation': "0",
                         'rotationvariation': "16",
                         'noisescale': "1500",
@@ -467,7 +470,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 5),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_ice_xs')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_ice_xs",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 6),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(2.0,6.0,i+thisSeed + 6),2)),
                         'rotation': "0",
                         'rotationvariation': "16",
                         'noisescale': "5000",
@@ -476,7 +479,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 6),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_nividium_l')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_nividium_l",
-                        'densityfactor': str(round(factorDensity*randnum(0.5,2.0,i+thisSeed + 3),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(0.5,2.0,i+thisSeed + 3),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
@@ -485,7 +488,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 3),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_nividium_m')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_nividium_m",
-                        'densityfactor': str(round(factorDensity*randnum(1.0,4.0,i+thisSeed + 4),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(1.0,4.0,i+thisSeed + 4),2)),
                         'rotation': "0",
                         'rotationvariation': "8",
                         'noisescale': "15000",
@@ -494,7 +497,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.5,1.0,i+thisSeed + 4),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_nividium_s')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_nividium_s",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 5),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(2.0,6.0,i+thisSeed + 5),2)),
                         'rotation': "0",
                         'rotationvariation': "16",
                         'noisescale': "1500",
@@ -503,7 +506,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
                         'maxnoisevalue': str(round(randnum(0.3,1.0,i+thisSeed + 5),3))})
                 if randomizeThisRegion or noGenRegionsInput or len(genRITree.findall('.//' + thisMacroName + '/fields/asteroid_nividium_xs')) > 0: etree.SubElement(fields, 'asteroid', {
                         'groupref': "asteroid_nividium_xs",
-                        'densityfactor': str(round(factorDensity*randnum(2.0,6.0,i+thisSeed + 6),2)),
+                        'densityfactor': str(round(factorDensity*regionDensityMultiplier*randnum(2.0,6.0,i+thisSeed + 6),2)),
                         'rotation': "0",
                         'rotationvariation': "4",
                         'noisescale': "15000",
