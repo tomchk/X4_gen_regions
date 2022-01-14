@@ -72,7 +72,7 @@ class Gen_Regions_Operator(bpy.types.Operator):
         source = mytool.source
         target = mytool.target
         seed = int(mytool.seed)
-        densityMultiplier = int(mytool.densityMultiplier)
+        densityMultiplier = float(mytool.densityMultiplier)
         
 
         def prettify(elem):
