@@ -3,7 +3,7 @@ This is a WIP Blender addon that handles Blender animation exporting to X4 binar
 
 INSTALLATION:
 
-(1) Click Code button.
+(1) Click Code button above, on this page.
 
 (2) Click Download ZIP.
 
@@ -42,6 +42,9 @@ Most users should follow these steps:
 (6) You should follow the vanilla pattern for adding the animations to your component XML--the information for that is in the metadata node of the anixml file. I have not tested what exactly can be omitted, but I suspect at least that you need to add "animation" to the "tag".
 
 The other buttons are for creating randomized regions from a sectors.xml file (unrelated, just currently part of this addon) and generating orbits for things like planets. Let's get animating!
+
+
+See some of my results on this channel: https://www.youtube.com/channel/UCRTy3bRo3w3y8eySApcxo3A
 
 
 
