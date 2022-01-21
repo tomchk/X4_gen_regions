@@ -7,9 +7,7 @@ INSTALLATION:
 
 (2) Click Download ZIP.
 
-(3) Rename ZIP to "X4_gen_regions.zip" (remove the "-main").
-
-(4) Follow this to install the ZIP in Blender: https://youtu.be/LzdoUTvAgXk?t=84
+(3) Follow this to install the ZIP in Blender: https://youtu.be/LzdoUTvAgXk?t=84
 
 
 ANIMATION: 
